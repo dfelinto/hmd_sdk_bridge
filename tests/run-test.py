@@ -9,11 +9,28 @@ if lib_folder not in sys.path:
 """
 
 import bridge
-import bridge_wrapper
 
-def main():
+def test_simple():
+    import bridge_wrapper
+
     input = 4
     output = bridge_wrapper.functionTest(input)
+
     print("Return of {0} is {1}".format(input, output))
 
-main()
+
+def test_oculus():
+    from bridge.oculus import HMD
+
+    if HMD.isConnected():
+        print("Oculus is connected")
+    else:
+        print("Oculus not connected")
+        return
+
+    hmd = HMD()
+    del hmd
+
+test_simple()
+
+test_oculus()
