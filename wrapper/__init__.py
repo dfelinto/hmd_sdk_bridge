@@ -309,7 +309,7 @@ add_library_search_dirs([])
 ###############################################################################
 import struct
 
-def load(name, win_lib, linux_lib, osx_lib):
+def load(name, win_lib=None, linux_lib=None, osx_lib=None):
 
     suffix = "-x86"
     prefix = "win32"
@@ -318,11 +318,11 @@ def load(name, win_lib, linux_lib, osx_lib):
     if 64 == 8 * struct.calcsize("P"):
         suffix = "-x86-64"
 
-    if ("linux" in sys.platform):
+    if ("linux" in sys.platform and linux_lib):
         file = linux_lib
         prefix = "linux"
 
-    elif ("darwin" in sys.platform):
+    elif ("darwin" in sys.platform and osx_lib):
         file = osx_lib
         prefix = "darwin"
 
@@ -333,5 +333,5 @@ def load(name, win_lib, linux_lib, osx_lib):
     sys.modules[name] = lib
 
 
-load('bridge_wrapper', ('BridgeLib.dll', 'libOculusBridge.so', 'libOculusBridge.dylib'))
+load('bridge_wrapper', win_lib='BridgeLib.dll', linux_lib='libOculusBridge.so', osx_lib='libOculusBridge.dylib')
 
