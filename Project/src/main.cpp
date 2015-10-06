@@ -1,4 +1,5 @@
 #include "Bridge.h"
+#include "../Include/Bridge_C_API.h"
 
 #if 1
 int main()
