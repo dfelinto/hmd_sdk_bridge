@@ -65,6 +65,9 @@ Oculus::Oculus() :HMD()
 		ovrTrackingCap_Position,
 		0);
 
+	ovrSizei recommendedTex0Size = ovr_GetFovTextureSize(this->m_hmd, ovrEye_Left, desc.DefaultEyeFov[0], 1.0f);
+	ovrSizei recommendedTex1Size = ovr_GetFovTextureSize(this->m_hmd, ovrEye_Right, desc.DefaultEyeFov[1], 1.0f);
+
 	/* store data */
 	this->m_hmd = hmd;
 	this->m_desc = desc;
@@ -73,6 +76,10 @@ Oculus::Oculus() :HMD()
 	this->m_hmdToEyeViewOffset[0] = this->m_eyeRenderDesc[0].HmdToEyeViewOffset;
 	this->m_hmdToEyeViewOffset[1] = this->m_eyeRenderDesc[1].HmdToEyeViewOffset;
 	this->m_frame = -1;
+	this->m_width[0] = recommendedTex0Size.w;
+	this->m_height[0] = recommendedTex0Size.h;
+	this->m_width[1] = recommendedTex1Size.w;
+	this->m_height[1] = recommendedTex1Size.h;
 }
 
 Oculus::~Oculus()
@@ -101,21 +108,20 @@ bool Oculus::isConnected()
 bool Oculus::setup(unsigned int framebuffer_object_left, unsigned int framebuffer_object_right)
 {
 	ovrResult result;
+	return true; /* TODO */
 
 	/* TODO */
-	ovrSizei recommendedTex0Size = ovr_GetFovTextureSize(this->m_hmd, ovrEye_Left, this->m_desc.DefaultEyeFov[0], 1.0f);
-	ovrSizei recommendedTex1Size = ovr_GetFovTextureSize(this->m_hmd, ovrEye_Right, this->m_desc.DefaultEyeFov[1], 1.0f);
 
 	ovrSizei bufferSize;
-	bufferSize.w = recommendedTex0Size.w + recommendedTex1Size.w;
-	bufferSize.h = MAX(recommendedTex0Size.h, recommendedTex1Size.h);
+	bufferSize.w = this->m_width[0] + this->m_width[1];
+	bufferSize.h = MAX(this->m_height[0], this->m_height[1]);
 
-	result = ovr_CreateSwapTextureSetGL(this->m_hmd, GL_SRGB8_ALPHA8, recommendedTex0Size.w, recommendedTex0Size.h, &this->m_textureSet[0]);
+	result = ovr_CreateSwapTextureSetGL(this->m_hmd, GL_SRGB8_ALPHA8, this->m_width[0], this->m_height[0], &this->m_textureSet[0]);
 
 	if (result != ovrSuccess)
 		return false;
 
-	result = ovr_CreateSwapTextureSetGL(this->m_hmd, GL_SRGB8_ALPHA8, recommendedTex1Size.w, recommendedTex1Size.h, &this->m_textureSet[1]);
+	result = ovr_CreateSwapTextureSetGL(this->m_hmd, GL_SRGB8_ALPHA8, this->m_width[1], this->m_height[1], &this->m_textureSet[1]);
 
 	if (result != ovrSuccess)
 		return false;

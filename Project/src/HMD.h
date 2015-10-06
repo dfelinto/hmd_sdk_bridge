@@ -19,15 +19,17 @@ public:
 	bool reCenter(void);
 
 /* generic */
-	int getWidth() { return this->m_width; }
-	int getHeight() { return this->m_height; }
+	int getWidthLeft() { return this->m_width[0]; }
+	int getHeightLeft() { return this->m_height[0]; }
+	int getWidthRight() { return this->m_width[1]; }
+	int getHeightRight() { return this->m_height[1]; }
 	void getProjectionMatrixLeft(const float nearz, const float farz, float *r_matrix[4][4]);
 	void getProjectionMatrixRight(const float nearz, const float farz, float *r_matrix[4][4]);
 
 protected:
 	unsigned int m_framebuffer_object[2];
-	unsigned int m_width;
-	unsigned int m_height;
+	unsigned int m_width[2];
+	unsigned int m_height[2];
 };
 
 
