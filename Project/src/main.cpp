@@ -1,13 +1,9 @@
 #include "Bridge.h"
 #include "Oculus.h"
+
 #include "../Include/Bridge_C_API.h"
 
 #include <iostream>
-
-extern "C"
-{
-	int functionTest(int input);
-}
 
 int functionTest(int input)
 {
@@ -19,3 +15,5 @@ int main()
 {
 	return 0;
 }
+
+#undef EXPORT_DLL
