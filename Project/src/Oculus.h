@@ -8,6 +8,7 @@ class Oculus : public HMD
 public:
 	Oculus();
 	~Oculus();
+
 	static bool isConnected();
 
 	bool setup(unsigned int framebuffer_object);
@@ -17,9 +18,6 @@ public:
 	bool frameReady(void);
 
 	bool reCenter(void);
-
-private:
-	unsigned int m_framebuffer_object;
 };
 
 #endif /* __OCULUS_H__ */

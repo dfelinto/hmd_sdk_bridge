@@ -7,6 +7,7 @@ public:
 	HMD();
 	~HMD();
 
+/* must inherit */
 	static bool isConnected();
 
 	bool setup(unsigned int framebuffer_object);
@@ -17,8 +18,16 @@ public:
 
 	bool reCenter(void);
 
-private:
+/* generic */
+	int getWidth() { return this->m_width; }
+	int getHeight() { return this->m_height; }
+	void getProjectionMatrixLeft(float *r_matrix[4][4]);
+	void getProjectionMatrixRight(float *r_matrix[4][4]);
+
+protected:
 	unsigned int m_framebuffer_object;
+	unsigned int m_width;
+	unsigned int m_height;
 };
 
 

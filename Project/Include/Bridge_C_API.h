@@ -9,4 +9,9 @@ extern "C" {
 	bool Oculus_update(Oculus *oculus, float r_head_transform[4][4], float r_eye_left[3], float r_eye_right[3]) { return oculus->update(r_head_transform, r_eye_left, r_eye_right); }
 	bool Oculus_frameReady(Oculus *oculus) { return oculus->frameReady(); }
 	bool Oculus_reCenter(Oculus *oculus) { return oculus->reCenter(); }
+
+	unsigned int Oculus_width(Oculus *oculus) { return oculus->getWidth(); }
+	unsigned int Oculus_height(Oculus *oculus) { return oculus->getHeight(); }
+	void Oculus_projectionMatrixLeft(Oculus *oculus, float *r_matrix[4][4]) { return oculus->getProjectionMatrixLeft(r_matrix); }
+	void Oculus_projectionMatrixRight(Oculus *oculus, float *r_matrix[4][4]) { return oculus->getProjectionMatrixLeft(r_matrix); }
 }
