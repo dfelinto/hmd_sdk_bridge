@@ -30,7 +30,7 @@ private:
 	ovrEyeRenderDesc m_eyeRenderDesc[2];
 	ovrVector3f m_hmdToEyeViewOffset[2];
 	ovrLayerEyeFov m_layer;
-	ovrSwapTextureSet *m_textureSet;
+	ovrSwapTextureSet *m_textureSet[2];
 };
 
 #endif /* __OCULUS_H__ */

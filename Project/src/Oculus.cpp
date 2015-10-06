@@ -51,7 +51,8 @@ Oculus::Oculus() :HMD()
 
 Oculus::~Oculus()
 {
-	ovr_DestroySwapTextureSet(this->m_hmd, this->m_textureSet);
+	ovr_DestroySwapTextureSet(this->m_hmd, this->m_textureSet[0]);
+	ovr_DestroySwapTextureSet(this->m_hmd, this->m_textureSet[1]);
 	ovr_Destroy(this->m_hmd);
 	ovr_Shutdown();
 }
@@ -79,15 +80,21 @@ bool Oculus::setup(unsigned int framebuffer_object_left, unsigned int framebuffe
 	bufferSize.w = recommendedTex0Size.w + recommendedTex1Size.w;
 	bufferSize.h = MAX(recommendedTex0Size.h, recommendedTex1Size.h);
 
-	ovrSwapTextureSet *textureSet;
+	result = ovr_CreateSwapTextureSetGL(this->m_hmd, GL_SRGB8_ALPHA8, recommendedTex0Size.w, recommendedTex0Size.h, &this->m_textureSet[0]);
 
-	result = ovr_CreateSwapTextureSetGL(this->m_hmd, GL_SRGB8_ALPHA8, bufferSize.w, bufferSize.h, &textureSet);
+	if (result != ovrSuccess)
+		return false;
+
+	result = ovr_CreateSwapTextureSetGL(this->m_hmd, GL_SRGB8_ALPHA8, recommendedTex1Size.w, recommendedTex1Size.h, &this->m_textureSet[1]);
+
+	if (result != ovrSuccess)
+		return false;
 
 	ovrLayerEyeFov layer;
 	layer.Header.Type = ovrLayerType_EyeFov;
 	layer.Header.Flags = 0;
-	layer.ColorTexture[0] = textureSet;
-	layer.ColorTexture[1] = textureSet;
+	layer.ColorTexture[0] = this->m_textureSet[0];
+	layer.ColorTexture[1] = this->m_textureSet[1];
 	layer.Fov[0] = this->m_eyeRenderDesc[0].Fov;
 	layer.Fov[1] = this->m_eyeRenderDesc[1].Fov;
 	layer.Viewport[0].Pos.x = 0;
@@ -98,12 +105,12 @@ bool Oculus::setup(unsigned int framebuffer_object_left, unsigned int framebuffe
 	layer.Viewport[1].Pos.y = 0;
 	layer.Viewport[1].Size.w = bufferSize.w / 2;
 	layer.Viewport[1].Size.h = bufferSize.h / 2;
+	// layer.RenderPose is updated later per frame
 
 	/* store data */
 	this->m_framebuffer_object[0] = framebuffer_object_left;
 	this->m_framebuffer_object[1] = framebuffer_object_right;
 	this->m_layer = layer;
-	this->m_textureSet = textureSet;
 
 	return true;
 };
@@ -132,7 +139,7 @@ bool Oculus::update(float *r_head_transform[4][4], float *r_eye_left[3], float* 
 bool Oculus::frameReady()
 {
 	ovrLayerHeader *layers = &this->m_layer.Header;
-	ovrResult result = ovr_SubmitFrame(this->m_hmd, 0, nullptr, &layers, 1);
+	ovrResult result = ovr_SubmitFrame(this->m_hmd, 0, nullptr, &layers, this->m_frame);
 
 	if (ovrSuccess == result) {
 		return true;
