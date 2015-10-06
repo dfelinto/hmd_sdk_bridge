@@ -9,6 +9,22 @@ class HMD(baseHMD):
         self._near = -1
         self._far = -1
 
+    @property
+    def width_left(self):
+        return bridge.Oculus_widthLeft(self._device)
+
+    @property
+    def width_right(self):
+        return bridge.Oculus_widthRight(self._device)
+
+    @property
+    def height_left(self):
+        return bridge.Oculus_heightLeft(self._device)
+
+    @property
+    def height_right(self):
+        return bridge.Oculus_heightRight(self._device)
+
     @staticmethod
     def isConnected():
         """
@@ -52,13 +68,13 @@ class HMD(baseHMD):
         """
         Oculus SDK bridge
         """
-        bridge.Oculus_frameReady()
+        bridge.Oculus_frameReady(self._device)
 
     def reCenter(self):
         """
         Re-center the HMD device
         """
-        bridge.Oculus_reCenter()
+        bridge.Oculus_reCenter(self._device)
 
     def quit(self):
         """
