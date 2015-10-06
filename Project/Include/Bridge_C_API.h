@@ -3,6 +3,7 @@
 
 #include "HMD.h"
 #include "Oculus.h"
+#include "Debug.h"
 
 #if defined(_WIN32)
 #define EXPORT_LIB extern "C" __declspec(dllexport)
@@ -10,7 +11,10 @@
 #define EXPORT_LIB extern "C"
 #endif
 
-EXPORT_LIB int functionTest(int input);
+/* Debug wrapper */
+EXPORT_LIB Debug *Debug_new(int number) { return new Debug(number); }
+EXPORT_LIB int Debug_multiplicationFactor() { return Debug::multiplicationFactor(); }
+EXPORT_LIB int Debug_multiplicationResult(Debug *debug) { return debug->multiplicationResult(); }
 
 /* Oculus wrapper */
 EXPORT_LIB Oculus *Oculus_new(){ return new Oculus(); }

@@ -10,12 +10,16 @@ if lib_folder not in sys.path:
 
 import bridge
 
-def test_simple():
+def test_debug():
     import bridge_wrapper
 
-    input = 4
-    output = bridge_wrapper.functionTest(input)
+    input = 3
 
+    device = bridge_wrapper.Debug_new(input)
+    factor = bridge_wrapper.Debug_multiplicationFactor()
+    print("Multiplication factor is {0}".format(factor))
+
+    output = bridge_wrapper.Debug_multiplicationResult(device)
     print("Return of {0} is {1}".format(input, output))
 
 
@@ -31,11 +35,12 @@ def test_oculus():
     hmd = HMD()
 
     # get FBO dimensions
-    print("Dimensions: (l) {0} x {1} : (r) {2} {3}".format(hmd.width_left, hmd.height_left, hmd.width_right, hmd.height_right))
+    print("Dimensions: (l) {0} x {1} : (r) {2} x {3}".format(hmd.width_left, hmd.height_left, hmd.width_right, hmd.height_right))
 
     # cleanup
     del hmd
 
-test_simple()
+
+test_debug()
 
 test_oculus()
