@@ -21,8 +21,8 @@ public:
 /* generic */
 	int getWidth() { return this->m_width; }
 	int getHeight() { return this->m_height; }
-	void getProjectionMatrixLeft(float *r_matrix[4][4]);
-	void getProjectionMatrixRight(float *r_matrix[4][4]);
+	void getProjectionMatrixLeft(const float near, const float far, float *r_matrix[4][4]);
+	void getProjectionMatrixRight(const float near, const float far, float *r_matrix[4][4]);
 
 protected:
 	unsigned int m_framebuffer_object;

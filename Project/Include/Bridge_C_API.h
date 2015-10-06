@@ -12,6 +12,6 @@ extern "C" {
 
 	unsigned int Oculus_width(Oculus *oculus) { return oculus->getWidth(); }
 	unsigned int Oculus_height(Oculus *oculus) { return oculus->getHeight(); }
-	void Oculus_projectionMatrixLeft(Oculus *oculus, float *r_matrix[4][4]) { return oculus->getProjectionMatrixLeft(r_matrix); }
-	void Oculus_projectionMatrixRight(Oculus *oculus, float *r_matrix[4][4]) { return oculus->getProjectionMatrixLeft(r_matrix); }
+	void Oculus_projectionMatrixLeft(Oculus *oculus, const float near, const float far, float *r_matrix[4][4]) { return oculus->getProjectionMatrixLeft(near, far, r_matrix); }
+	void Oculus_projectionMatrixRight(Oculus *oculus, const float near, const float far, float *r_matrix[4][4]) { return oculus->getProjectionMatrixLeft(near, far, r_matrix); }
 }
