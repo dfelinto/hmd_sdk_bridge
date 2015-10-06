@@ -9,10 +9,11 @@ if lib_folder not in sys.path:
 """
 
 import bridge
+import bridge_wrapper
 
 def main():
     input = 4
-    output = bridge.functionTest(input)
+    output = bridge_wrapper.functionTest(input)
     print("Return of {0} is {1}".format(input, output))
 
 main()
