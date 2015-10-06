@@ -14,10 +14,12 @@ C:\OculusSDK\LibOVR\Lib\Windows\Win32\Release\VS2013\LibOVR.lib
 
 (change it accordingly to your Oculus SDK location).
 
-5. Under the project’s properties, `Configuration Properties` > `C/C++` > `Additional Include Directories`:
+5. Under the project's properties, `Configuration Properties` > `C/C++` > `Additional Include Directories`:
 
 C:\OculusSDK\LibOVR\Include
+C:\OculusSDK\LibOVRKernel\Src
 
 (change it accordingly to your Oculus SDK location).
+
 
 6. Build
