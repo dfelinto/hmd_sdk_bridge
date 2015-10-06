@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="../Readme.md" />
+    <Text Include="../ReadMe.md" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include/Bridge_C_API.h">
