@@ -114,15 +114,15 @@ bool Oculus::update(float *r_head_transform[4][4], float *r_eye_left[3], float* 
 	ovrFrameTiming ftiming = ovr_GetFrameTiming(this->m_hmd, ++this->m_frame);
 	ovrTrackingState hmdState = ovr_GetTrackingState(this->m_hmd, ftiming.DisplayMidpointSeconds);
 
-	ovr_CalcEyePoses(hmdState.HeadPose.ThePose, this->m_hmdToEyeViewOffset, this->m_layer.RenderPose);
-
 	if ((hmdState.StatusFlags & (ovrStatus_OrientationTracked | ovrStatus_PositionTracked)) != 0) {
-		/* TODO */
+		ovr_CalcEyePoses(hmdState.HeadPose.ThePose, this->m_hmdToEyeViewOffset, this->m_layer.RenderPose);
 
 		this->m_layer.RenderPose[0].Position;
 		this->m_layer.RenderPose[0].Orientation;
 		this->m_layer.RenderPose[1].Position;
 		this->m_layer.RenderPose[1].Orientation;
+
+		/* TODO */
 
 		return true;
 	}
