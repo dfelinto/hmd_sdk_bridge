@@ -23,3 +23,12 @@ C:\OculusSDK\LibOVRKernel\Src
 
 
 6. Build
+
+
+Once built, the final package should be assembled with the wrapper python files such that:
+
+//bridge (new folder)
+//bridge/__init__.py (wrapper/__init__.py)
+//bridge/hmd.py (wrapper/hmd.py)
+//bridge/oculus.py (wrapper/oculus.py)
+//bridge/win32-x86/BridgeLib.dll (Release/BridgeLib.dll)
