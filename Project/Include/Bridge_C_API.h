@@ -1,3 +1,6 @@
+#ifndef __BRIDGE_C_API_H__
+#define __BRIDGE_C_API_H__
+
 #include "HMD.h"
 #include "Oculus.h"
 
@@ -15,3 +18,5 @@ extern "C" {
 	void Oculus_projectionMatrixLeft(Oculus *oculus, const float nearz, const float farz, float *r_matrix[4][4]) { return oculus->getProjectionMatrixLeft(nearz, farz, r_matrix); }
 	void Oculus_projectionMatrixRight(Oculus *oculus, const float nearz, const float farz, float *r_matrix[4][4]) { return oculus->getProjectionMatrixRight(nearz, farz, r_matrix); }
 }
+
+#endif /* __BRIDGE_C_API_H__ */
