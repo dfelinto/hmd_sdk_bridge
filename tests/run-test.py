@@ -29,6 +29,11 @@ def test_oculus():
         return
 
     hmd = HMD()
+
+    # get FBO dimensions
+    print("Dimensions: (l) {0} x {1} : (r) {2} {3}".format(hmd.width_left, hmd.height_left, hmd.width_right, hmd.height_right))
+
+    # cleanup
     del hmd
 
 test_simple()
