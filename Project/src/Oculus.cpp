@@ -8,21 +8,47 @@
 
 #define MAX(a,b) a > b ? a : b;
 
+eLibStatus Oculus::m_lib_status = LIB_UNLOADED;
+
+bool Oculus::initializeLibrary()
+{
+	switch (Oculus::m_lib_status) {
+	case LIB_FAILED:
+		return false;
+		break;
+	case LIB_INITIALIZED:
+		return true;
+		break;
+	case LIB_UNLOADED:
+	default:
+		/* try to load the library */
+		break;
+	}
+
+	ovrResult result;
+	result = ovr_Initialize(nullptr);
+
+	if (OVR_FAILURE(result)) {
+		Oculus::m_lib_status = LIB_FAILED;
+		return false;
+	}
+	else {
+		Oculus::m_lib_status = LIB_INITIALIZED;
+		return true;
+	}
+}
+
 Oculus::Oculus() :HMD()
 {
-	ovrResult result;
-
-	/* initialize the library */
-	result = ovr_Initialize(nullptr);
-	if (OVR_FAILURE(result)) {
+	/* Make sure the library is loaded */
+	if (Oculus::initializeLibrary() == false)
 		throw "libOVR could not initialize";
-	}
 
 	ovrHmd hmd;
 	ovrGraphicsLuid luid;
 
 	/* initialize the device */
-	result = ovr_Create(&hmd, &luid);
+	ovrResult result = ovr_Create(&hmd, &luid);
 	if (OVR_FAILURE(result)) {
 		ovr_Shutdown();
 		throw "Oculus could not initialize";
@@ -59,6 +85,10 @@ Oculus::~Oculus()
 
 bool Oculus::isConnected()
 {
+	/* Make sure the library is loaded */
+	if (Oculus::initializeLibrary() == false)
+		throw "libOVR could not initialize";
+
 	ovrHmdDesc desc = ovr_GetHmdDesc(nullptr);
 	if (desc.AvailableHmdCaps) {
 		return true;

@@ -4,13 +4,20 @@
 #include "HMD.h"
 #include "OVR_CAPI_0_7_0.h"
 
+typedef enum eLibStatus
+{
+	LIB_UNLOADED = 0,
+	LIB_FAILED,
+	LIB_INITIALIZED,
+};
+
 class Oculus : public HMD
 {
 public:
 	Oculus();
 	~Oculus();
 
-	static bool isConnected();
+	static bool isConnected(void);
 
 	bool setup(const unsigned int framebuffer_object_left, const unsigned int framebuffer_object_right);
 
@@ -24,6 +31,8 @@ public:
 	void getProjectionMatrixRight(const float nearz, const float farz, float *r_matrix[4][4]);
 
 private:
+	static bool initializeLibrary(void);
+
 	unsigned int m_frame;
 	ovrHmd m_hmd;
 	ovrHmdDesc m_desc;
@@ -31,6 +40,8 @@ private:
 	ovrVector3f m_hmdToEyeViewOffset[2];
 	ovrLayerEyeFov m_layer;
 	ovrSwapTextureSet *m_textureSet[2];
+
+	static eLibStatus m_lib_status;
 };
 
 #endif /* __OCULUS_H__ */
