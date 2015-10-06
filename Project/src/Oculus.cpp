@@ -65,8 +65,8 @@ Oculus::Oculus() :HMD()
 		ovrTrackingCap_Position,
 		0);
 
-	ovrSizei recommendedTex0Size = ovr_GetFovTextureSize(this->m_hmd, ovrEye_Left, desc.DefaultEyeFov[0], 1.0f);
-	ovrSizei recommendedTex1Size = ovr_GetFovTextureSize(this->m_hmd, ovrEye_Right, desc.DefaultEyeFov[1], 1.0f);
+	ovrSizei recommendedTex0Size = ovr_GetFovTextureSize(hmd, ovrEye_Left, desc.DefaultEyeFov[0], 1.0f);
+	ovrSizei recommendedTex1Size = ovr_GetFovTextureSize(hmd, ovrEye_Right, desc.DefaultEyeFov[1], 1.0f);
 
 	/* store data */
 	this->m_hmd = hmd;
