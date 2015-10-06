@@ -12,7 +12,7 @@ public:
 
 	bool setup(unsigned int framebuffer_object);
 
-	bool update(float r_head_transform[4][4], float r_eye_left[3], float r_eye_right[3]);
+	bool update(float *r_head_transform[4][4], float *r_eye_left[3], float *r_eye_right[3]);
 
 	bool frameReady(void);
 
