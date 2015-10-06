@@ -24,4 +24,5 @@ EXPORT_LIB unsigned int Oculus_height(Oculus *oculus) { return oculus->getHeight
 EXPORT_LIB void Oculus_projectionMatrixLeft(Oculus *oculus, const float nearz, const float farz, float *r_matrix[4][4]) { return oculus->getProjectionMatrixLeft(nearz, farz, r_matrix); }
 EXPORT_LIB void Oculus_projectionMatrixRight(Oculus *oculus, const float nearz, const float farz, float *r_matrix[4][4]) { return oculus->getProjectionMatrixRight(nearz, farz, r_matrix); }
 
+#undef EXPORT_LIB
 #endif /* __BRIDGE_C_API_H__ */
