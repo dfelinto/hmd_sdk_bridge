@@ -3,12 +3,17 @@
 #include "HMD.h"
 #include "OVR_CAPI_0_7_0.h"
 
+#include <GL/CAPI_GLE.h>
+#include "OVR_CAPI_GL.h"
+
 #define MAX(a,b) a > b ? a : b;
 
 Oculus::Oculus() :HMD()
 {
+	ovrResult result;
+
 	/* initialize the library */
-	ovrResult result = ovr_Initialize(nullptr);
+	result = ovr_Initialize(nullptr);
 	if (OVR_FAILURE(result)) {
 		throw "libOVR could not initialize";
 	}
@@ -46,6 +51,7 @@ Oculus::Oculus() :HMD()
 
 Oculus::~Oculus()
 {
+	ovr_DestroySwapTextureSet(this->m_hmd, this->m_textureSet);
 	ovr_Destroy(this->m_hmd);
 	ovr_Shutdown();
 }
@@ -61,30 +67,43 @@ bool Oculus::isConnected()
 	}
 }
 
-bool Oculus::setup(unsigned int framebuffer_object)
+bool Oculus::setup(unsigned int framebuffer_object_left, unsigned int framebuffer_object_right)
 {
-	/* TODO */
+	ovrResult result;
 
-	ovrSizei recommenedTex0Size = ovr_GetFovTextureSize(this->m_hmd, ovrEye_Left, this->m_desc.DefaultEyeFov[0], 1.0f);
-	ovrSizei recommenedTex1Size = ovr_GetFovTextureSize(this->m_hmd, ovrEye_Right, this->m_desc.DefaultEyeFov[1], 1.0f);
+	/* TODO */
+	ovrSizei recommendedTex0Size = ovr_GetFovTextureSize(this->m_hmd, ovrEye_Left, this->m_desc.DefaultEyeFov[0], 1.0f);
+	ovrSizei recommendedTex1Size = ovr_GetFovTextureSize(this->m_hmd, ovrEye_Right, this->m_desc.DefaultEyeFov[1], 1.0f);
 
 	ovrSizei bufferSize;
-	bufferSize.w = recommenedTex0Size.w + recommenedTex1Size.w;
-	bufferSize.h = MAX(recommenedTex0Size.h, recommenedTex1Size.h);
+	bufferSize.w = recommendedTex0Size.w + recommendedTex1Size.w;
+	bufferSize.h = MAX(recommendedTex0Size.h, recommendedTex1Size.h);
+
+	ovrSwapTextureSet *textureSet;
+
+	result = ovr_CreateSwapTextureSetGL(this->m_hmd, GL_SRGB8_ALPHA8, bufferSize.w, bufferSize.h, &textureSet);
 
 	ovrLayerEyeFov layer;
 	layer.Header.Type = ovrLayerType_EyeFov;
 	layer.Header.Flags = 0;
-	layer.ColorTexture[0] = /* TODO */ nullptr;
-	layer.ColorTexture[1] = /* TODO */ nullptr;
+	layer.ColorTexture[0] = textureSet;
+	layer.ColorTexture[1] = textureSet;
 	layer.Fov[0] = this->m_eyeRenderDesc[0].Fov;
 	layer.Fov[1] = this->m_eyeRenderDesc[1].Fov;
-	// /* TODO */ layer.Viewport[0] = ovrRecti(0, 0, bufferSize.w / 2, bufferSize.h);
-	// /* TODO */ layer.Viewport[1] = ovrRecti(bufferSize.w / 2, 0, bufferSize.w / 2, bufferSize.h);
+	layer.Viewport[0].Pos.x = 0;
+	layer.Viewport[0].Pos.y = 0;
+	layer.Viewport[0].Size.w = bufferSize.w / 2;
+	layer.Viewport[0].Size.h = bufferSize.h / 2;
+	layer.Viewport[1].Pos.x = bufferSize.w / 2;
+	layer.Viewport[1].Pos.y = 0;
+	layer.Viewport[1].Size.w = bufferSize.w / 2;
+	layer.Viewport[1].Size.h = bufferSize.h / 2;
 
 	/* store data */
-	m_framebuffer_object = framebuffer_object;
-	m_layer = layer;
+	this->m_framebuffer_object[0] = framebuffer_object_left;
+	this->m_framebuffer_object[1] = framebuffer_object_right;
+	this->m_layer = layer;
+	this->m_textureSet = textureSet;
 
 	return true;
 };
@@ -129,12 +148,12 @@ bool Oculus::reCenter()
 	return true;
 };
 
-void Oculus::getProjectionMatrixLeft(const float near, const float far, float *r_matrix[4][4])
+void Oculus::getProjectionMatrixLeft(const float nearz, const float farz, float *r_matrix[4][4])
 {
 	ovrMatrix4f matrix = ovrMatrix4f_Projection(
 		this->m_eyeRenderDesc[0].Fov,
-		near,
-		far,
+		nearz,
+		farz,
 		ovrProjection_RightHanded);
 
 	for (int i = 0; i < 4; i++)
@@ -142,12 +161,12 @@ void Oculus::getProjectionMatrixLeft(const float near, const float far, float *r
 			*r_matrix[i][j] = matrix.M[i][j];
 }
 
-void Oculus::getProjectionMatrixRight(const float near, const float far, float *r_matrix[4][4])
+void Oculus::getProjectionMatrixRight(const float nearz, const float farz, float *r_matrix[4][4])
 {
 	ovrMatrix4f matrix = ovrMatrix4f_Projection(
 		this->m_eyeRenderDesc[1].Fov,
-		near,
-		far,
+		nearz,
+		farz,
 		ovrProjection_RightHanded);
 
 	for (int i = 0; i < 4; i++)

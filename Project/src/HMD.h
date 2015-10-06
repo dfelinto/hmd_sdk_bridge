@@ -10,7 +10,7 @@ public:
 /* must inherit */
 	static bool isConnected();
 
-	bool setup(unsigned int framebuffer_object);
+	bool setup(const unsigned int framebuffer_object_left, const unsigned int framebuffer_object_right);
 
 	bool update(float *r_head_transform[4][4], float *r_eye_left[3], float *r_eye_right[3]);
 
@@ -21,11 +21,11 @@ public:
 /* generic */
 	int getWidth() { return this->m_width; }
 	int getHeight() { return this->m_height; }
-	void getProjectionMatrixLeft(const float near, const float far, float *r_matrix[4][4]);
-	void getProjectionMatrixRight(const float near, const float far, float *r_matrix[4][4]);
+	void getProjectionMatrixLeft(const float nearz, const float farz, float *r_matrix[4][4]);
+	void getProjectionMatrixRight(const float nearz, const float farz, float *r_matrix[4][4]);
 
 protected:
-	unsigned int m_framebuffer_object;
+	unsigned int m_framebuffer_object[2];
 	unsigned int m_width;
 	unsigned int m_height;
 };
