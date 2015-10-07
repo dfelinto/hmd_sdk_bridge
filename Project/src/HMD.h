@@ -10,7 +10,7 @@ public:
 /* must inherit */
 	virtual bool setup(const unsigned int framebuffer_object_left, const unsigned int framebuffer_object_right) = 0;
 
-	virtual bool update(float *r_head_transform[4][4], float *r_eye_left[3], float *r_eye_right[3]) = 0;
+	virtual bool update(float *r_orientation_left, float *r_position_left, float *r_orientation_right, float *r_position_right) = 0;
 
 	virtual bool frameReady(void) = 0;
 

@@ -19,7 +19,7 @@ public:
 
 	bool setup(const unsigned int framebuffer_object_left, const unsigned int framebuffer_object_right);
 
-	bool update(float *r_head_transform[4][4], float *r_eye_left[3], float *r_eye_right[3]);
+	bool update(float *r_orientation_left, float *r_position_left, float *r_orientation_right, float *r_position_right);
 
 	bool frameReady(void);
 

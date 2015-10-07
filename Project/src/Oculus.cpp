@@ -128,9 +128,6 @@ bool Oculus::isConnected()
 bool Oculus::setup(const unsigned int framebuffer_object_left, const unsigned int framebuffer_object_right)
 {
 	ovrResult result;
-	return true; /* TODO */
-
-	/* TODO */
 
 	ovrSizei bufferSize;
 	bufferSize.w = this->m_width[0] + this->m_width[1];
@@ -171,7 +168,7 @@ bool Oculus::setup(const unsigned int framebuffer_object_left, const unsigned in
 	return true;
 };
 
-bool Oculus::update(float *r_head_transform[4][4], float *r_eye_left[3], float* r_eye_right[3])
+bool Oculus::update(float *r_orientation_left, float *r_position_left, float *r_orientation_right, float *r_position_right)
 {
 	/* Get both eye poses simultaneously, with IPD offset already included */
 	ovrFrameTiming ftiming = ovr_GetFrameTiming(this->m_hmd, ++this->m_frame);
@@ -180,43 +177,23 @@ bool Oculus::update(float *r_head_transform[4][4], float *r_eye_left[3], float* 
 	if ((hmdState.StatusFlags & (ovrStatus_OrientationTracked | ovrStatus_PositionTracked)) != 0) {
 		ovr_CalcEyePoses(hmdState.HeadPose.ThePose, this->m_hmdToEyeViewOffset, this->m_layer.RenderPose);
 
-		this->m_layer.RenderPose[0].Position;
-		this->m_layer.RenderPose[0].Orientation;
-		this->m_layer.RenderPose[1].Position;
-		this->m_layer.RenderPose[1].Orientation;
+		r_orientation_left[0] = this->m_layer.RenderPose[0].Orientation.x;
+		r_orientation_left[1] = this->m_layer.RenderPose[0].Orientation.y;
+		r_orientation_left[2] = this->m_layer.RenderPose[0].Orientation.z;
+		r_orientation_left[3] = this->m_layer.RenderPose[0].Orientation.w;
 
-		std::cout <<
-			"Left Orientation: " <<
-			this->m_layer.RenderPose[0].Orientation.x << " " <<
-			this->m_layer.RenderPose[0].Orientation.y << " " <<
-			this->m_layer.RenderPose[0].Orientation.z << " " <<
-			this->m_layer.RenderPose[0].Orientation.w <<
-			std::endl;
+		r_position_left[0] = this->m_layer.RenderPose[0].Position.x;
+		r_position_left[1] = this->m_layer.RenderPose[0].Position.y;
+		r_position_left[2] = this->m_layer.RenderPose[0].Position.z;
 
-		std::cout <<
-			"Left Position: " <<
-			this->m_layer.RenderPose[0].Position.x << " " <<
-			this->m_layer.RenderPose[0].Position.y << " " <<
-			this->m_layer.RenderPose[0].Position.z <<
-			std::endl;
+		r_orientation_right[0] = this->m_layer.RenderPose[1].Orientation.x;
+		r_orientation_right[1] = this->m_layer.RenderPose[1].Orientation.y;
+		r_orientation_right[2] = this->m_layer.RenderPose[1].Orientation.z;
+		r_orientation_right[3] = this->m_layer.RenderPose[1].Orientation.w;
 
-		std::cout <<
-			"Right Orientation: " <<
-			this->m_layer.RenderPose[1].Orientation.x << " " <<
-			this->m_layer.RenderPose[1].Orientation.y << " " <<
-			this->m_layer.RenderPose[1].Orientation.z << " " <<
-			this->m_layer.RenderPose[1].Orientation.w <<
-			std::endl;
-
-		std::cout <<
-			"Right Position: " <<
-			this->m_layer.RenderPose[1].Position.x << " " <<
-			this->m_layer.RenderPose[1].Position.y << " " <<
-			this->m_layer.RenderPose[1].Position.z <<
-			std::endl;
-
-		/* TODO */
-		/* transform the tracking data into head transformation */
+		r_position_right[0] = this->m_layer.RenderPose[1].Position.x;
+		r_position_right[1] = this->m_layer.RenderPose[1].Position.y;
+		r_position_right[2] = this->m_layer.RenderPose[1].Position.z;
 
 		return true;
 	}
