@@ -16,6 +16,8 @@ EXPORT_LIB Debug *Debug_new(int number) { return new Debug(number); }
 EXPORT_LIB void Debug_del(Debug *debug) { if (debug) { delete debug; debug = NULL; } }
 EXPORT_LIB int Debug_multiplicationFactor() { return Debug::multiplicationFactor(); }
 EXPORT_LIB int Debug_multiplicationResult(Debug *debug) { return debug->multiplicationResult(); }
+EXPORT_LIB void Debug_matrix(float *r_float) { Debug::matrix(r_float);}
+EXPORT_LIB void Debug_matrixNonStatic(Debug *debug, float *r_float) { debug->matrixNonStatic(r_float); }
 
 /* Oculus wrapper */
 EXPORT_LIB bool Oculus_initializeLibrary(){ return Oculus::initializeLibrary(); }
@@ -29,8 +31,8 @@ EXPORT_LIB unsigned int Oculus_widthLeft(Oculus *oculus) { return oculus->getWid
 EXPORT_LIB unsigned int Oculus_heightLeft(Oculus *oculus) { return oculus->getHeightLeft(); }
 EXPORT_LIB unsigned int Oculus_widthRight(Oculus *oculus) { return oculus->getWidthRight(); }
 EXPORT_LIB unsigned int Oculus_heightRight(Oculus *oculus) { return oculus->getHeightRight(); }
-EXPORT_LIB void Oculus_projectionMatrixLeft(Oculus *oculus, const float nearz, const float farz, float *r_matrix[4][4]) { return oculus->getProjectionMatrixLeft(nearz, farz, r_matrix); }
-EXPORT_LIB void Oculus_projectionMatrixRight(Oculus *oculus, const float nearz, const float farz, float *r_matrix[4][4]) { return oculus->getProjectionMatrixRight(nearz, farz, r_matrix); }
+EXPORT_LIB void Oculus_projectionMatrixLeft(Oculus *oculus, float nearz, float farz, float *r_matrix) { oculus->getProjectionMatrixLeft(nearz, farz, r_matrix); }
+EXPORT_LIB void Oculus_projectionMatrixRight(Oculus *oculus, const float nearz, const float farz, float *r_matrix) { oculus->getProjectionMatrixRight(nearz, farz, r_matrix); }
 
 #undef EXPORT_LIB
 #endif /* __BRIDGE_C_API_H__ */

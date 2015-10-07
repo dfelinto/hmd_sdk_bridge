@@ -16,9 +16,9 @@ public:
 
 	virtual bool reCenter(void) = 0;
 
-	virtual void getProjectionMatrixLeft(const float nearz, const float farz, float *r_matrix[4][4]) = 0;
+	virtual void getProjectionMatrixLeft(const float nearz, const float farz, float *r_matrix) = 0;
 
-	virtual void getProjectionMatrixRight(const float nearz, const float farz, float *r_matrix[4][4]) = 0;
+	virtual void getProjectionMatrixRight(const float nearz, const float farz, float *r_matrix) = 0;
 
 /* generic */
 	int getWidthLeft() { return this->m_width[0]; }

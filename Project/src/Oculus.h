@@ -25,8 +25,9 @@ public:
 
 	bool reCenter(void);
 
-	void getProjectionMatrixLeft(const float nearz, const float farz, float *r_matrix[4][4]);
-	void getProjectionMatrixRight(const float nearz, const float farz, float *r_matrix[4][4]);
+	void getProjectionMatrixLeft(const float nearz, const float farz, float *r_matrix);
+
+	void getProjectionMatrixRight(const float nearz, const float farz, float *r_matrix);
 
 	static bool initializeLibrary(void);
 

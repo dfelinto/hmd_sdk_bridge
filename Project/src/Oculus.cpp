@@ -242,7 +242,7 @@ bool Oculus::reCenter()
 	return true;
 };
 
-void Oculus::getProjectionMatrixLeft(const float nearz, const float farz, float *r_matrix[4][4])
+void Oculus::getProjectionMatrixLeft(const float nearz, const float farz, float *r_matrix)
 {
 	ovrMatrix4f matrix = ovrMatrix4f_Projection(
 		this->m_eyeRenderDesc[0].Fov,
@@ -252,10 +252,10 @@ void Oculus::getProjectionMatrixLeft(const float nearz, const float farz, float 
 
 	for (int i = 0; i < 4; i++)
 		for (int j = 0; j < 4; j++)
-			*r_matrix[i][j] = matrix.M[i][j];
+			r_matrix[i * 4 + j] = matrix.M[i][j];
 }
 
-void Oculus::getProjectionMatrixRight(const float nearz, const float farz, float *r_matrix[4][4])
+void Oculus::getProjectionMatrixRight(const float nearz, const float farz, float *r_matrix)
 {
 	ovrMatrix4f matrix = ovrMatrix4f_Projection(
 		this->m_eyeRenderDesc[1].Fov,
@@ -265,5 +265,5 @@ void Oculus::getProjectionMatrixRight(const float nearz, const float farz, float
 
 	for (int i = 0; i < 4; i++)
 		for (int j = 0; j < 4; j++)
-			*r_matrix[i][j] = matrix.M[i][j];
+			r_matrix[i * 4 + j] = matrix.M[i][j];
 }

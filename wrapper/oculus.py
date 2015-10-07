@@ -1,5 +1,9 @@
 TODO = True
 
+from ctypes import (
+        c_float,
+        )
+
 from .hmd import HMD as baseHMD
 import bridge_wrapper as bridge
 
@@ -29,18 +33,25 @@ class HMD(baseHMD):
 
     def getProjectionMatrixLeft(self, near, far):
         if self._cameraClippingChanged(near, far):
-            mat = [[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]]
+            mat = [i for i in range(16)]
+            arr = (c_float * len(mat))(*mat)
 
-            bridge.Oculus_projectionMatrixLeft(self._device, near, far, mat)
+            bridge.Oculus_projectionMatrixLeft(self._device, c_float(near), c_float(far), arr)
+            mat = [i for i in arr]
+
             self.projection_matrix_left = mat
 
         return super(HMD, self).projection_matrix_left
 
     def getProjectionMatrixRight(self, near, far):
         if self._cameraClippingChanged(near, far):
-            self.projection_matrix_right = \
-                    bridge.Oculus_projectionMatrixRight(
-                            self._device, near, far)
+            mat = [i for i in range(16)]
+            arr = (ctypes.c_float * len(mat))(*mat)
+
+            bridge.Oculus_projectionMatrixRight(self._device, c_float(near), c_float(far), arr)
+            mat = [i for i in arr]
+
+            self.projection_matrix_right = mat
 
         return self.projection_matrix_right
 
