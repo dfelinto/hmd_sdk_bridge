@@ -42,6 +42,8 @@ bool Oculus::initializeLibrary()
 
 Oculus::Oculus():HMD()
 {
+	std::cout << "Oculus()" << std::endl;
+
 	/* Make sure the library is loaded */
 	if (Oculus::initializeLibrary() == false)
 		throw "libOVR could not initialize";

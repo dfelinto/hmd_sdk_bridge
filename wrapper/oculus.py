@@ -57,7 +57,7 @@ class HMD(baseHMD):
         """
         return bridge.Oculus_setup(framebuffer_left, framebuffer_right)
 
-    def loop(self):
+    def update(self):
         """
         Get fresh tracking data
         """

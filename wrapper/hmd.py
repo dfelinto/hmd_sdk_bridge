@@ -32,7 +32,7 @@ class HMD:
         """
         return TODO
 
-    def loop(self):
+    def update(self):
         """
         Get fresh tracking data
         """
