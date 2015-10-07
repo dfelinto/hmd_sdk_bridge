@@ -6,6 +6,8 @@
 #include <GL/CAPI_GLE.h>
 #include "OVR_CAPI_GL.h"
 
+#include <iostream>
+
 #define MAX(a,b) a > b ? a : b;
 
 eLibStatus Oculus::m_lib_status = LIB_UNLOADED;
@@ -43,6 +45,9 @@ Oculus::Oculus() :HMD()
 	/* Make sure the library is loaded */
 	if (Oculus::initializeLibrary() == false)
 		throw "libOVR could not initialize";
+
+	if (this->isConnected() == false)
+		throw "Oculus not connected";
 
 	ovrHmd hmd;
 	ovrGraphicsLuid luid;
@@ -97,11 +102,11 @@ bool Oculus::isConnected()
 		throw "libOVR could not initialize";
 
 	ovrHmdDesc desc = ovr_GetHmdDesc(nullptr);
-	if (desc.AvailableHmdCaps) {
-		return true;
+	if (desc.Type == ovrHmd_None) {
+		return false;
 	}
 	else {
-		return false;
+		return true;
 	}
 }
 
@@ -165,7 +170,38 @@ bool Oculus::update(float *r_head_transform[4][4], float *r_eye_left[3], float* 
 		this->m_layer.RenderPose[1].Position;
 		this->m_layer.RenderPose[1].Orientation;
 
+		std::cout <<
+			"Left Orientation: " <<
+			this->m_layer.RenderPose[0].Orientation.x << " " <<
+			this->m_layer.RenderPose[0].Orientation.y << " " <<
+			this->m_layer.RenderPose[0].Orientation.z << " " <<
+			this->m_layer.RenderPose[0].Orientation.w <<
+			std::endl;
+
+		std::cout <<
+			"Left Position: " <<
+			this->m_layer.RenderPose[0].Position.x << " " <<
+			this->m_layer.RenderPose[0].Position.y << " " <<
+			this->m_layer.RenderPose[0].Position.z <<
+			std::endl;
+
+		std::cout <<
+			"Right Orientation: " <<
+			this->m_layer.RenderPose[1].Orientation.x << " " <<
+			this->m_layer.RenderPose[1].Orientation.y << " " <<
+			this->m_layer.RenderPose[1].Orientation.z << " " <<
+			this->m_layer.RenderPose[1].Orientation.w <<
+			std::endl;
+
+		std::cout <<
+			"Right Position: " <<
+			this->m_layer.RenderPose[1].Position.x << " " <<
+			this->m_layer.RenderPose[1].Position.y << " " <<
+			this->m_layer.RenderPose[1].Position.z <<
+			std::endl;
+
 		/* TODO */
+		/* transform the tracking data into head transformation */
 
 		return true;
 	}
@@ -180,7 +216,7 @@ bool Oculus::frameReady()
 	if (ovrSuccess == result) {
 		return true;
 	}
-	else{
+	else {
 		return false;
 	}
 };

@@ -17,8 +17,8 @@ EXPORT_LIB int Debug_multiplicationFactor() { return Debug::multiplicationFactor
 EXPORT_LIB int Debug_multiplicationResult(Debug *debug) { return debug->multiplicationResult(); }
 
 /* Oculus wrapper */
+EXPORT_LIB bool Oculus_initializeLibrary(){ return Oculus::initializeLibrary(); }
 EXPORT_LIB Oculus *Oculus_new(){ return new Oculus(); }
-EXPORT_LIB bool Oculus_isConnected(){ return Oculus::isConnected(); }
 EXPORT_LIB bool Oculus_setup(Oculus *oculus, const unsigned int framebuffer_object_left, const unsigned int framebuffer_object_right){ return oculus->setup(framebuffer_object_left, framebuffer_object_right); }
 EXPORT_LIB bool Oculus_update(Oculus *oculus, float *r_head_transform[4][4], float *r_eye_left[3], float *r_eye_right[3]) { return oculus->update(r_head_transform, r_eye_left, r_eye_right); }
 EXPORT_LIB bool Oculus_frameReady(Oculus *oculus) { return oculus->frameReady(); }

@@ -8,29 +8,32 @@ public:
 	~HMD();
 
 /* must inherit */
-	static bool isConnected();
+	virtual bool setup(const unsigned int framebuffer_object_left, const unsigned int framebuffer_object_right) = 0;
 
-	bool setup(const unsigned int framebuffer_object_left, const unsigned int framebuffer_object_right);
+	virtual bool update(float *r_head_transform[4][4], float *r_eye_left[3], float *r_eye_right[3]) = 0;
 
-	bool update(float *r_head_transform[4][4], float *r_eye_left[3], float *r_eye_right[3]);
+	virtual bool frameReady(void) = 0;
 
-	bool frameReady(void);
+	virtual bool reCenter(void) = 0;
 
-	bool reCenter(void);
+	virtual void getProjectionMatrixLeft(const float nearz, const float farz, float *r_matrix[4][4]) = 0;
+
+	virtual void getProjectionMatrixRight(const float nearz, const float farz, float *r_matrix[4][4]) = 0;
 
 /* generic */
 	int getWidthLeft() { return this->m_width[0]; }
 	int getHeightLeft() { return this->m_height[0]; }
 	int getWidthRight() { return this->m_width[1]; }
 	int getHeightRight() { return this->m_height[1]; }
-	void getProjectionMatrixLeft(const float nearz, const float farz, float *r_matrix[4][4]);
-	void getProjectionMatrixRight(const float nearz, const float farz, float *r_matrix[4][4]);
 
 protected:
+
+/* must inherit */
+	virtual bool isConnected(void) = 0;
+
 	unsigned int m_framebuffer_object[2];
 	unsigned int m_width[2];
 	unsigned int m_height[2];
 };
-
 
 #endif /* __HMD_H__ */

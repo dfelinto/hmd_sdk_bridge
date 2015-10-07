@@ -26,13 +26,12 @@ def test_debug():
 def test_oculus():
     from bridge.oculus import HMD
 
-    if HMD.isConnected():
-        print("Oculus is connected")
-    else:
-        print("Oculus not connected")
-        return
 
-    hmd = HMD()
+    try:
+        hmd = HMD()
+    except Exception as E:
+        print (E)
+        return False
 
     # get FBO dimensions
     print("Dimensions: (l) {0} x {1} : (r) {2} x {3}".format(hmd.width_left, hmd.height_left, hmd.width_right, hmd.height_right))
