@@ -68,6 +68,7 @@ class HMD(baseHMD):
 
         return:head position, head orientation
         """
+        return [[j for j in range(4)] for i in range(4)], [i for i in range(3)], [i for i in range(3)]
 
     def frameReady(self):
         """
