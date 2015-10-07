@@ -32,9 +32,7 @@ class HMD(baseHMD):
         return bridge.Oculus_heightRight(self._device)
 
     def _getProjectionMatrix(self, near, far, bridge_func):
-        mat = [i for i in range(16)]
-        arr = (c_float * len(mat))(*mat)
-
+        arr = (c_float * 16)(*range(16))
         bridge_func(self._device, c_float(near), c_float(far), arr)
         return [i for i in arr]
 
@@ -61,14 +59,27 @@ class HMD(baseHMD):
     def update(self):
         """
         Get fresh tracking data
-        """
-        TODO
-        """
-        Oculus SDK bridge
 
-        return:head position, head orientation
+        :return: return left orientation, left_position, right_orientation, right_position
+        :rtype: tuple(list(4), list(3), list(4), list(3))
         """
-        return [[j for j in range(4)] for i in range(4)], [i for i in range(3)], [i for i in range(3)]
+
+        orientation_ptr = [None, None]
+        position_ptr = [None, None]
+
+        orientation_ptr[0] = (c_float * 4)(*range(4))
+        orientation_ptr[1] = (c_float * 4)(*range(4))
+
+        position_ptr[0] = (c_float * 3)(*range(3))
+        position_ptr[1] = (c_float * 3)(*range(3))
+
+        if bridge.Oculus_update(self._device, orientation_ptr[0], position_ptr[0], orientation_ptr[1], position_ptr[1]):
+            self._orientation[0] = list(orientation_ptr[0])
+            self._orientation[1] = list(orientation_ptr[1])
+            self._position[0] = list(position_ptr[0])
+            self._position[1] = list(position_ptr[1])
+
+        return super(HMD, self).update()
 
     def frameReady(self):
         """

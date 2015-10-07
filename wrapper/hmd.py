@@ -6,6 +6,8 @@ class HMD:
         self._near = -1
         self._far = -1
         self._projection_matrix = [None, None]
+        self._orientation = [[i for i in range(4)] for i in range(2)]
+        self._position = [[i for i in range(3)] for i in range(2)]
 
     @property
     def projection_matrix_left(self):
@@ -35,8 +37,11 @@ class HMD:
     def update(self):
         """
         Get fresh tracking data
+
+        :return: return left orientation, left_position, right_orientation, right_position
+        :rtype: tuple(list(4), list(3), list(4), list(3))
         """
-        return TODO
+        return self._orientation[0], self._position[0], self._orientation[1], self._position[1]
 
     def frameReady(self):
         """

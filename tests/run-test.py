@@ -54,16 +54,11 @@ def test_oculus():
 
     # get FBO dimensions
     print("Dimensions: (l) {0} x {1} : (r) {2} x {3}".format(hmd.width_left, hmd.height_left, hmd.width_right, hmd.height_right))
-
-    mat = [i for i in range(16)]
-    arr = (ctypes.c_float * len(mat))(*mat)
-
-    bridge_wrapper.Oculus_projectionMatrixLeft(hmd._device, 1, ctypes.c_float(157.9), arr)
-    mat = [i for i in arr]
-
-    #print("Projection Matrix Left: {0}".format(mat))
     print("Projection Matrix Right: {0}".format(hmd.getProjectionMatrixRight(0.8, 157.0)))
     print("Projection Matrix Left: {0}".format(hmd.getProjectionMatrixLeft(0.3, 557.0)))
+
+    for i in range(10):
+        print(hmd.update())
 
 test_debug()
 
