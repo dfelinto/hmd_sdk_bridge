@@ -5,9 +5,11 @@ import bridge_wrapper as bridge
 
 class HMD(baseHMD):
     def __init__(self):
+        super(HMD, self).__init__()
         self._device = bridge.Oculus_new()
-        self._near = -1
-        self._far = -1
+
+    def __del__(self):
+        bridge.Oculus_del(self._device)
 
     @property
     def width_left(self):
@@ -25,29 +27,35 @@ class HMD(baseHMD):
     def height_right(self):
         return bridge.Oculus_heightRight(self._device)
 
-    @staticmethod
-    def isConnected():
-        """
-        Check if device is connected
+    def getProjectionMatrixLeft(self, near, far):
+        if self._cameraClippingChanged(near, far):
+            mat = [[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]]
 
-        :return: return True if the device is connected
-        :rtype: bool
-        """
-        return bridge.Oculus_isConnected()
+            bridge.Oculus_projectionMatrixLeft(self._device, near, far, mat)
+            self.projection_matrix_left = mat
 
-    def init(self):
+        return super(HMD, self).projection_matrix_left
+
+    def getProjectionMatrixRight(self, near, far):
+        if self._cameraClippingChanged(near, far):
+            self.projection_matrix_right = \
+                    bridge.Oculus_projectionMatrixRight(
+                            self._device, near, far)
+
+        return self.projection_matrix_right
+
+    def init(self, framebuffer_left, framebuffer_right):
         """
         Initialize device
 
+        :param framebuffer_object_left: framebuffer object created externally
+        :type framebuffer_object_left: GLuint
+        :param framebuffer_object_right: framebuffer object created externally
+        :type framebuffer_object_right: GLuint
         :return: return True if the device was properly initialized
         :rtype: bool
         """
-        return TODO
-        """
-        Oculus SDK bridge
-
-        return: status, fbo, texture, projection matrix, eye separation, width, height
-        """
+        return bridge.Oculus_setup(framebuffer_left, framebuffer_right)
 
     def loop(self):
         """
@@ -63,27 +71,17 @@ class HMD(baseHMD):
     def frameReady(self):
         """
         The frame is ready to be send to the device
+
+        :return: return True if success
+        :rtype: bool
         """
-        TODO
-        """
-        Oculus SDK bridge
-        """
-        bridge.Oculus_frameReady(self._device)
+        return bridge.Oculus_frameReady(self._device)
 
     def reCenter(self):
         """
         Re-center the HMD device
-        """
-        bridge.Oculus_reCenter(self._device)
 
-    def quit(self):
+        :return: return True if success
+        :rtype: bool
         """
-        Garbage collection
-        """
-        TODO
-        """
-        Oculus SDK bridge
-
-        delete fbo, rbo, tex_id
-        """
-
+        return bridge.Oculus_reCenter(self._device)

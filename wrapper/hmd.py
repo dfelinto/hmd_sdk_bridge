@@ -3,16 +3,25 @@ TODO = True
 class HMD:
     def __init__(self):
         self._device = None
+        self._near = -1
+        self._far = -1
+        self._projection_matrix = [None, None]
 
-    @staticmethod
-    def isConnected():
-        """
-        Check if device is connected
+    @property
+    def projection_matrix_left(self):
+        return self._projection_matrix[0]
 
-        :return: return True if the device is connected
-        :rtype: bool
-        """
-        TODO
+    @projection_matrix_left.setter
+    def projection_matrix_left(self, value):
+        self._projection_matrix[0] = value
+
+    @property
+    def projection_matrix_right(self):
+        return self._projection_matrix[1]
+
+    @projection_matrix_right.setter
+    def projection_matrix_right(self, value):
+        self._projection_matrix[1] = value
 
     def init(self):
         """
@@ -40,4 +49,17 @@ class HMD:
         Garbage collection
         """
         return TODO
+
+    def _cameraClippingChanged(self, near, far):
+        """
+        check if near of far values changed
+        """
+        if near == self._near and far == self._far:
+            return False
+
+        self._near = near
+        self._far = far
+
+        return True
+
 

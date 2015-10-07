@@ -40,7 +40,7 @@ bool Oculus::initializeLibrary()
 	}
 }
 
-Oculus::Oculus() :HMD()
+Oculus::Oculus():HMD()
 {
 	/* Make sure the library is loaded */
 	if (Oculus::initializeLibrary() == false)
@@ -73,7 +73,7 @@ Oculus::Oculus() :HMD()
 	ovrSizei recommendedTex0Size = ovr_GetFovTextureSize(hmd, ovrEye_Left, desc.DefaultEyeFov[0], 1.0f);
 	ovrSizei recommendedTex1Size = ovr_GetFovTextureSize(hmd, ovrEye_Right, desc.DefaultEyeFov[1], 1.0f);
 
-	/* store data */
+	/* initialize data */
 	this->m_hmd = hmd;
 	this->m_desc = desc;
 	this->m_eyeRenderDesc[0] = ovr_GetRenderDesc(hmd, ovrEye_Left, desc.DefaultEyeFov[0]);
@@ -85,14 +85,27 @@ Oculus::Oculus() :HMD()
 	this->m_height[0] = recommendedTex0Size.h;
 	this->m_width[1] = recommendedTex1Size.w;
 	this->m_height[1] = recommendedTex1Size.h;
+	this->m_textureSet[0] = NULL;
+	this->m_textureSet[1] = NULL;
 }
 
 Oculus::~Oculus()
 {
-	ovr_DestroySwapTextureSet(this->m_hmd, this->m_textureSet[0]);
-	ovr_DestroySwapTextureSet(this->m_hmd, this->m_textureSet[1]);
+	std::cout << "~Oculus" << std::endl;
+
+	if (this->m_textureSet[0])
+		ovr_DestroySwapTextureSet(this->m_hmd, this->m_textureSet[0]);
+
+	if (this->m_textureSet[1])
+		ovr_DestroySwapTextureSet(this->m_hmd, this->m_textureSet[1]);
+
 	ovr_Destroy(this->m_hmd);
 	ovr_Shutdown();
+
+	/* the library needs to be re-loaded every time because the
+	 * Python wrapper keeps the static values
+	 */
+	Oculus::m_lib_status = LIB_UNLOADED;
 }
 
 bool Oculus::isConnected()
