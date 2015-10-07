@@ -61,8 +61,9 @@ def test_oculus():
     bridge_wrapper.Oculus_projectionMatrixLeft(hmd._device, 1, ctypes.c_float(157.9), arr)
     mat = [i for i in arr]
 
-    print("Projection Matrix Left: {0}".format(mat))
-    print("Projection Matrix Left: {0}".format(hmd.getProjectionMatrixLeft(0.1, 157.0)))
+    #print("Projection Matrix Left: {0}".format(mat))
+    print("Projection Matrix Right: {0}".format(hmd.getProjectionMatrixRight(0.8, 157.0)))
+    print("Projection Matrix Left: {0}".format(hmd.getProjectionMatrixLeft(0.3, 557.0)))
 
 test_debug()
 

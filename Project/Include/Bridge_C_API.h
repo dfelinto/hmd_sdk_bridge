@@ -31,7 +31,7 @@ EXPORT_LIB unsigned int Oculus_widthLeft(Oculus *oculus) { return oculus->getWid
 EXPORT_LIB unsigned int Oculus_heightLeft(Oculus *oculus) { return oculus->getHeightLeft(); }
 EXPORT_LIB unsigned int Oculus_widthRight(Oculus *oculus) { return oculus->getWidthRight(); }
 EXPORT_LIB unsigned int Oculus_heightRight(Oculus *oculus) { return oculus->getHeightRight(); }
-EXPORT_LIB void Oculus_projectionMatrixLeft(Oculus *oculus, float nearz, float farz, float *r_matrix) { oculus->getProjectionMatrixLeft(nearz, farz, r_matrix); }
+EXPORT_LIB void Oculus_projectionMatrixLeft(Oculus *oculus, const float nearz, const float farz, float *r_matrix) { oculus->getProjectionMatrixLeft(nearz, farz, r_matrix); }
 EXPORT_LIB void Oculus_projectionMatrixRight(Oculus *oculus, const float nearz, const float farz, float *r_matrix) { oculus->getProjectionMatrixRight(nearz, farz, r_matrix); }
 
 #undef EXPORT_LIB

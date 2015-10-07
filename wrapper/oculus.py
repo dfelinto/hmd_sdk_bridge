@@ -31,31 +31,21 @@ class HMD(baseHMD):
     def height_right(self):
         return bridge.Oculus_heightRight(self._device)
 
-    def getProjectionMatrixLeft(self, near, far):
-        if self._cameraClippingChanged(near, far):
-            mat = [i for i in range(16)]
-            arr = (c_float * len(mat))(*mat)
+    def _getProjectionMatrix(self, near, far, bridge_func):
+        mat = [i for i in range(16)]
+        arr = (c_float * len(mat))(*mat)
 
-            bridge.Oculus_projectionMatrixLeft(self._device, c_float(near), c_float(far), arr)
-            mat = [i for i in arr]
+        bridge_func(self._device, c_float(near), c_float(far), arr)
+        return [i for i in arr]
 
-            self.projection_matrix_left = mat
+    def _updateProjectionMatrix(self, near, far):
+        self.projection_matrix_left = self._getProjectionMatrix(
+                near, far, bridge.Oculus_projectionMatrixLeft)
 
-        return super(HMD, self).projection_matrix_left
+        self.projection_matrix_right = self._getProjectionMatrix(
+                near, far, bridge.Oculus_projectionMatrixRight)
 
-    def getProjectionMatrixRight(self, near, far):
-        if self._cameraClippingChanged(near, far):
-            mat = [i for i in range(16)]
-            arr = (ctypes.c_float * len(mat))(*mat)
-
-            bridge.Oculus_projectionMatrixRight(self._device, c_float(near), c_float(far), arr)
-            mat = [i for i in arr]
-
-            self.projection_matrix_right = mat
-
-        return self.projection_matrix_right
-
-    def init(self, framebuffer_left, framebuffer_right):
+    def setup(self, framebuffer_left, framebuffer_right):
         """
         Initialize device
 
@@ -66,7 +56,7 @@ class HMD(baseHMD):
         :return: return True if the device was properly initialized
         :rtype: bool
         """
-        return bridge.Oculus_setup(framebuffer_left, framebuffer_right)
+        return bridge.Oculus_setup(self._device, framebuffer_left, framebuffer_right)
 
     def update(self):
         """

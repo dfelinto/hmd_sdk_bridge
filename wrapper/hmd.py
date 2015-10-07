@@ -62,4 +62,12 @@ class HMD:
 
         return True
 
+    def getProjectionMatrixLeft(self, near, far):
+        if self._cameraClippingChanged(near, far):
+            self._updateProjectionMatrix(near, far)
+        return self.projection_matrix_left
 
+    def getProjectionMatrixRight(self, near, far):
+        if self._cameraClippingChanged(near, far):
+            self._updateProjectionMatrix(near, far)
+        return self.projection_matrix_right

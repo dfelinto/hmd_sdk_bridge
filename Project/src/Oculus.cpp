@@ -125,7 +125,7 @@ bool Oculus::isConnected()
 	}
 }
 
-bool Oculus::setup(unsigned int framebuffer_object_left, unsigned int framebuffer_object_right)
+bool Oculus::setup(const unsigned int framebuffer_object_left, const unsigned int framebuffer_object_right)
 {
 	ovrResult result;
 	return true; /* TODO */
