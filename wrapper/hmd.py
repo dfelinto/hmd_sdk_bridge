@@ -5,9 +5,11 @@ class HMD:
         self._device = None
         self._near = -1
         self._far = -1
-        self._projection_matrix = [None, None]
+        self._projection_matrix = [[i for i in range(16)], [i for i in range(16)]]
         self._orientation = [[i for i in range(4)] for i in range(2)]
         self._position = [[i for i in range(3)] for i in range(2)]
+        self._width = [0, 0]
+        self._height = [0, 0]
 
     @property
     def projection_matrix_left(self):
@@ -24,6 +26,22 @@ class HMD:
     @projection_matrix_right.setter
     def projection_matrix_right(self, value):
         self._projection_matrix[1] = value
+
+    @property
+    def width_left(self):
+        return self._width[0]
+
+    @property
+    def width_right(self):
+        return self._width[1]
+
+    @property
+    def height_left(self):
+        return self._height[0]
+
+    @property
+    def height_right(self):
+        return self._height[1]
 
     def init(self):
         """
