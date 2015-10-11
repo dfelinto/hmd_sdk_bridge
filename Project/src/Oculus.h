@@ -31,6 +31,10 @@ public:
 
 	static bool initializeLibrary(void);
 
+	bool mirrorOn(unsigned int *color_object, unsigned int *width, unsigned int *height);
+
+	void mirrorOff(void);
+
 private:
 	bool isConnected(void);
 	unsigned int m_frame;
@@ -42,6 +46,8 @@ private:
 	ovrSwapTextureSet *m_textureSet[2];
 
 	static eLibStatus m_lib_status;
+	unsigned int m_mirror_color_object;
+	unsigned int m_mirror_framebuffer_object;
 };
 
 #endif /* __OCULUS_H__ */

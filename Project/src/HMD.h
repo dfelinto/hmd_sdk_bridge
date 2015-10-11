@@ -20,6 +20,10 @@ public:
 
 	virtual void getProjectionMatrixRight(const float nearz, const float farz, float *r_matrix) = 0;
 
+	virtual bool mirrorOn(unsigned int *color_object, unsigned int *width, unsigned int *height) = 0;
+
+	virtual void mirrorOff(void) = 0;
+
 /* generic */
 	int getWidthLeft() { return this->m_width[0]; }
 	int getHeightLeft() { return this->m_height[0]; }
@@ -31,6 +35,7 @@ protected:
 /* must inherit */
 	virtual bool isConnected(void) = 0;
 
+	bool m_mirror_on = false;
 	unsigned int m_framebuffer_object[2];
 	unsigned int m_width[2];
 	unsigned int m_height[2];

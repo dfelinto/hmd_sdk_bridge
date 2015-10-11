@@ -177,6 +177,8 @@ bool Oculus::update(float *r_orientation_left, float *r_position_left, float *r_
 	if ((hmdState.StatusFlags & (ovrStatus_OrientationTracked | ovrStatus_PositionTracked)) != 0) {
 		ovr_CalcEyePoses(hmdState.HeadPose.ThePose, this->m_hmdToEyeViewOffset, this->m_layer.RenderPose);
 
+		/* TODO make modelview matrix */
+
 		r_orientation_left[0] = this->m_layer.RenderPose[0].Orientation.w;
 		r_orientation_left[1] = this->m_layer.RenderPose[0].Orientation.x;
 		r_orientation_left[2] = this->m_layer.RenderPose[0].Orientation.y;
@@ -202,8 +204,13 @@ bool Oculus::update(float *r_orientation_left, float *r_position_left, float *r_
 
 bool Oculus::frameReady()
 {
+	return true; /* TODO */
+	/* fill the Oculus buffer with Blender's FBOs */
+
 	ovrLayerHeader *layers = &this->m_layer.Header;
 	ovrResult result = ovr_SubmitFrame(this->m_hmd, 0, nullptr, &layers, this->m_frame);
+
+	/* TODO if mirror, copy data to mirror */
 
 	if (ovrSuccess == result) {
 		return true;
@@ -243,4 +250,22 @@ void Oculus::getProjectionMatrixRight(const float nearz, const float farz, float
 	for (int i = 0; i < 4; i++)
 		for (int j = 0; j < 4; j++)
 			r_matrix[i * 4 + j] = matrix.M[i][j];
+}
+
+bool Oculus::mirrorOn(unsigned int *color_object, unsigned int *width, unsigned int *height)
+{
+	if (this->m_mirror_on) {
+		*color_object = m_mirror_color_object;
+		return true;
+	}
+
+	/* TODO */
+	return true;
+}
+
+void Oculus::mirrorOff()
+{
+	if (!this->m_mirror_on)
+		return;
+	/* TODO */
 }

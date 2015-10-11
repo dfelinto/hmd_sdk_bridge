@@ -33,6 +33,8 @@ EXPORT_LIB unsigned int Oculus_widthRight(Oculus *oculus) { return oculus->getWi
 EXPORT_LIB unsigned int Oculus_heightRight(Oculus *oculus) { return oculus->getHeightRight(); }
 EXPORT_LIB void Oculus_projectionMatrixLeft(Oculus *oculus, const float nearz, const float farz, float *r_matrix) { oculus->getProjectionMatrixLeft(nearz, farz, r_matrix); }
 EXPORT_LIB void Oculus_projectionMatrixRight(Oculus *oculus, const float nearz, const float farz, float *r_matrix) { oculus->getProjectionMatrixRight(nearz, farz, r_matrix); }
+EXPORT_LIB bool Oculus_mirrorOn(Oculus *oculus, unsigned int *r_color_object, unsigned int *width, unsigned int *height) { return oculus->mirrorOn(color_object); }
+EXPORT_LIB void Oculus_mirrorOff(Oculus *oculus) { oculus->mirrorOff(); }
 
 #undef EXPORT_LIB
 #endif /* __BRIDGE_C_API_H__ */
