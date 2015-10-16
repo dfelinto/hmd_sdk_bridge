@@ -27,14 +27,21 @@ How to Build
 
 6. Build the solution
 
-Once built, the final package should be assembled with the wrapper python files such that:
+Once built, the final package should be copied to the bridge dylibs folder:
 ```
-//bridge (new folder)
-//bridge/__init__.py (wrapper/__init__.py)
-//bridge/hmd.py (wrapper/hmd.py)
-//bridge/oculus.py (wrapper/oculus.py)
-//bridge/win32-x86/BridgeLib.dll (Release/BridgeLib.dll)
+//bridge/dylibs/win32-x86/BridgeLib.dll (Win32/Release/BridgeLib.dll)
+//bridge/dylibs/win32-x86-64/BridgeLib.dll (x64/Release/BridgeLib.dll)
 ```
+
+Besides that, the SDK 0.5 dlls should be copied to:
+```
+//bridge/dylibs/darwin-x86-64/
+//bridge/dylibs/linux-x86-64/
+//bridge/dylibs/win32-x86-64/
+//bridge/dylibs/win32-x86/
+```
+
+The bridge folder should then be copied to the `hmd_sdk_bridge_build` repository and committed.
 
 Testing
 -------
