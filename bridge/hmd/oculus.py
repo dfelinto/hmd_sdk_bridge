@@ -1,11 +1,20 @@
-TODO = True
+"""
+Oculus
+======
+
+Oculus (oculus.com) head mounted display for OSX and Linux
+It uses a python wrapper to connect with the SDK
+
+It supports the Oculus SDK 0.7
+"""
+
+from . import HMD as baseHMD
+
+import bridge_wrapper as bridge
 
 from ctypes import (
         c_float,
         )
-
-from .hmd import HMD as baseHMD
-import bridge_wrapper as bridge
 
 class HMD(baseHMD):
     def __init__(self):

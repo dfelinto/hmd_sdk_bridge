@@ -1,3 +1,10 @@
+"""
+Head Mounted Display
+====================
+
+Base class to be inherited by all HMDs
+"""
+
 TODO = True
 
 class HMD:
