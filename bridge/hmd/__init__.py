@@ -59,6 +59,19 @@ class HMD:
         """
         return TODO
 
+    def setup(self, color_texture_left, color_texture_right):
+        """
+        Initialize device
+
+        :param color_texture_left: framebuffer object created externally
+        :type color_texture_left: GLuint
+        :param color_texture_right: framebuffer object created externally
+        :type color_texture_right: GLuint
+        :return: return True if the device was properly initialized
+        :rtype: bool
+        """
+        return TODO
+
     def update(self):
         """
         Get fresh tracking data

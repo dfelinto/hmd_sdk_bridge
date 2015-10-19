@@ -88,22 +88,22 @@ class HMD(baseHMD):
         self.projection_matrix_left = ovr.Hmd.get_perspective(self._fovPorts[0], near, far, True).toList()
         self.projection_matrix_right = ovr.Hmd.get_perspective(self._fovPorts[1], near, far, True).toList()
 
-    def setup(self, color_left, color_right):
+    def setup(self, color_texture_left, color_texture_right):
         """
         Initialize device
 
-        :param color_object_left: color object created externally
-        :type color_object_left: GLuint
-        :param color_object_right: color object created externally
-        :type color_object_right: GLuint
+        :param color_texture_left: color texture created externally with the framebuffer object data
+        :type color_texture_left: GLuint
+        :param color_texture_right: color texture created externally with the framebuffer object data
+        :type color_texture_right: GLuint
         :return: return True if the device was properly initialized
         :rtype: bool
         """
         # disable safety warning
         ovr.ovrHmd_DismissHSWDisplay(self._device.hmd)
 
-        self._eyeTextures[0].OGL.TexId = color_left
-        self._eyeTextures[1].OGL.TexId = color_right
+        self._eyeTextures[0].OGL.TexId = color_texture_left
+        self._eyeTextures[1].OGL.TexId = color_texture_right
         return True
 
     def update(self):

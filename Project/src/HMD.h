@@ -8,7 +8,7 @@ public:
 	~HMD();
 
 /* must inherit */
-	virtual bool setup(const unsigned int framebuffer_object_left, const unsigned int framebuffer_object_right) = 0;
+	virtual bool setup(const unsigned int color_texture_left, const unsigned int color_texture_right) = 0;
 
 	virtual bool update(float *r_orientation_left, float *r_position_left, float *r_orientation_right, float *r_position_right) = 0;
 
@@ -31,7 +31,7 @@ protected:
 /* must inherit */
 	virtual bool isConnected(void) = 0;
 
-	unsigned int m_framebuffer_object[2];
+	unsigned int m_color_texture[2];
 	unsigned int m_width[2];
 	unsigned int m_height[2];
 };

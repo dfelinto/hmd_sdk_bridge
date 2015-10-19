@@ -23,7 +23,7 @@ EXPORT_LIB void Debug_matrixNonStatic(Debug *debug, float *r_float) { debug->mat
 EXPORT_LIB bool Oculus_initializeLibrary(){ return Oculus::initializeLibrary(); }
 EXPORT_LIB Oculus *Oculus_new(){ return new Oculus(); }
 EXPORT_LIB void Oculus_del(Oculus *oculus){ if (oculus) delete oculus; }
-EXPORT_LIB bool Oculus_setup(Oculus *oculus, const unsigned int framebuffer_object_left, const unsigned int framebuffer_object_right){ return oculus->setup(framebuffer_object_left, framebuffer_object_right); }
+EXPORT_LIB bool Oculus_setup(Oculus *oculus, const unsigned int color_texture_left, const unsigned int color_texture_right){ return oculus->setup(color_texture_left, color_texture_right); }
 EXPORT_LIB bool Oculus_update(Oculus *oculus, float *r_orientation_left, float *r_position_left, float *r_orientation_right, float *r_position_right){ return oculus->update(r_orientation_left, r_position_left, r_orientation_right, r_position_right); };
 EXPORT_LIB bool Oculus_frameReady(Oculus *oculus) { return oculus->frameReady(); }
 EXPORT_LIB bool Oculus_reCenter(Oculus *oculus) { return oculus->reCenter(); }

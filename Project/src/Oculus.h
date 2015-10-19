@@ -17,7 +17,7 @@ public:
 	Oculus();
 	~Oculus();
 
-	bool setup(const unsigned int framebuffer_object_left, const unsigned int framebuffer_object_right);
+	bool setup(const unsigned int color_texture_left, const unsigned int color_texture_right);
 
 	bool update(float *r_orientation_left, float *r_position_left, float *r_orientation_right, float *r_position_right);
 

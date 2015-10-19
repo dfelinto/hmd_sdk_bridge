@@ -52,14 +52,14 @@ class HMD(baseHMD):
         self.projection_matrix_right = self._getProjectionMatrix(
                 near, far, bridge.Oculus_projectionMatrixRight)
 
-    def setup(self, framebuffer_left, framebuffer_right):
+    def setup(self, color_texture_left, color_texture_right):
         """
         Initialize device
 
-        :param framebuffer_object_left: framebuffer object created externally
-        :type framebuffer_object_left: GLuint
-        :param framebuffer_object_right: framebuffer object created externally
-        :type framebuffer_object_right: GLuint
+        :param color_texture_left: color texture created externally with the framebuffer object data
+        :type color_texture_left: GLuint
+        :param color_texture_right: color texture created externally with the framebuffer object data
+        :type color_texture_right: GLuint
         :return: return True if the device was properly initialized
         :rtype: bool
         """

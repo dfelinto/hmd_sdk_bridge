@@ -125,7 +125,7 @@ bool Oculus::isConnected()
 	}
 }
 
-bool Oculus::setup(const unsigned int framebuffer_object_left, const unsigned int framebuffer_object_right)
+bool Oculus::setup(const unsigned int color_texture_left, const unsigned int color_texture_right)
 {
 	ovrResult result;
 
@@ -161,8 +161,8 @@ bool Oculus::setup(const unsigned int framebuffer_object_left, const unsigned in
 	// layer.RenderPose is updated later per frame
 
 	/* store data */
-	this->m_framebuffer_object[0] = framebuffer_object_left;
-	this->m_framebuffer_object[1] = framebuffer_object_right;
+	this->m_color_texture[0] = color_texture_left;
+	this->m_color_texture[1] = color_texture_right;
 	this->m_layer = layer;
 
 	return true;
