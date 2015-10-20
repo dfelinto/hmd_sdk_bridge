@@ -18,6 +18,7 @@ EXPORT_LIB int Debug_multiplicationFactor() { return Debug::multiplicationFactor
 EXPORT_LIB int Debug_multiplicationResult(Debug *debug) { return debug->multiplicationResult(); }
 EXPORT_LIB void Debug_matrix(float *r_float) { Debug::matrix(r_float);}
 EXPORT_LIB void Debug_matrixNonStatic(Debug *debug, float *r_float) { debug->matrixNonStatic(r_float); }
+EXPORT_LIB void Debug_draw(const unsigned int color_texture) { Debug::draw(color_texture); }
 
 /* Oculus wrapper */
 EXPORT_LIB bool Oculus_initializeLibrary(){ return Oculus::initializeLibrary(); }
