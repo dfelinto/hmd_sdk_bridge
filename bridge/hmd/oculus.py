@@ -63,7 +63,7 @@ class HMD(baseHMD):
         :return: return True if the device was properly initialized
         :rtype: bool
         """
-        return bridge.Oculus_setup(self._device, framebuffer_left, framebuffer_right)
+        return bridge.Oculus_setup(self._device, color_texture_left, color_texture_right)
 
     def update(self):
         """
