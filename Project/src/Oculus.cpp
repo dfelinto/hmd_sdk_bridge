@@ -1,16 +1,11 @@
-#include "Bridge.h"
 #include "Oculus.h"
-#include "HMD.h"
-#include "OVR_CAPI_0_7_0.h"
-
-#include <GL/CAPI_GLE.h>
-#include "OVR_CAPI_GL.h"
 
 #include <iostream>
 
 #define MAX(a,b) a > b ? a : b;
 
 eLibStatus Oculus::m_lib_status = LIB_UNLOADED;
+
 
 bool Oculus::initializeLibrary()
 {
@@ -43,6 +38,9 @@ bool Oculus::initializeLibrary()
 Oculus::Oculus():HMD()
 {
 	std::cout << "Oculus()" << std::endl;
+
+	/* we need glew to access opengl commands */
+	glewInit();
 
 	/* Make sure the library is loaded */
 	if (Oculus::initializeLibrary() == false)
@@ -87,19 +85,23 @@ Oculus::Oculus():HMD()
 	this->m_height[0] = recommendedTex0Size.h;
 	this->m_width[1] = recommendedTex1Size.w;
 	this->m_height[1] = recommendedTex1Size.h;
-	this->m_textureSet[0] = NULL;
-	this->m_textureSet[1] = NULL;
+	this->m_eyeRenderTexture[0] = NULL;
+	this->m_eyeRenderTexture[1] = NULL;
+	this->m_fbo[0] = 0;
+	this->m_fbo[1] = 0;
 }
 
 Oculus::~Oculus()
 {
 	std::cout << "~Oculus" << std::endl;
 
-	if (this->m_textureSet[0])
-		ovr_DestroySwapTextureSet(this->m_hmd, this->m_textureSet[0]);
+	for (int eye = 0; eye < 2; eye++) {
+		if (this->m_eyeRenderTexture[eye])
+			delete this->m_eyeRenderTexture[eye];
 
-	if (this->m_textureSet[1])
-		ovr_DestroySwapTextureSet(this->m_hmd, this->m_textureSet[1]);
+		if (this->m_fbo[eye])
+			glDeleteFramebuffers(1, &this->m_fbo[eye]);
+	}
 
 	ovr_Destroy(this->m_hmd);
 	ovr_Shutdown();
@@ -127,43 +129,51 @@ bool Oculus::isConnected()
 
 bool Oculus::setup(const unsigned int color_texture_left, const unsigned int color_texture_right)
 {
-	ovrResult result;
+	
+
+	// Make eye render buffers
+	for (int eye = 0; eye < 2; eye++) {
+		ovrSizei idealTextureSize;
+		idealTextureSize.w = this->m_width[eye];
+		idealTextureSize.h = this->m_height[eye];
+
+		this->m_eyeRenderTexture[eye] = new TextureBuffer(this->m_hmd, idealTextureSize, 1);
+
+		if (!this->m_eyeRenderTexture[eye]->TextureSet) {
+			return false;
+		}
+	}
 
 	ovrSizei bufferSize;
 	bufferSize.w = this->m_width[0] + this->m_width[1];
 	bufferSize.h = MAX(this->m_height[0], this->m_height[1]);
 
-	result = ovr_CreateSwapTextureSetGL(this->m_hmd, GL_SRGB8_ALPHA8, this->m_width[0], this->m_height[0], &this->m_textureSet[0]);
-
-	if (result != ovrSuccess)
-		return false;
-
-	result = ovr_CreateSwapTextureSetGL(this->m_hmd, GL_SRGB8_ALPHA8, this->m_width[1], this->m_height[1], &this->m_textureSet[1]);
-
-	if (result != ovrSuccess)
-		return false;
-
 	ovrLayerEyeFov layer;
 	layer.Header.Type = ovrLayerType_EyeFov;
-	layer.Header.Flags = 0;
-	layer.ColorTexture[0] = this->m_textureSet[0];
-	layer.ColorTexture[1] = this->m_textureSet[1];
-	layer.Fov[0] = this->m_eyeRenderDesc[0].Fov;
-	layer.Fov[1] = this->m_eyeRenderDesc[1].Fov;
-	layer.Viewport[0].Pos.x = 0;
-	layer.Viewport[0].Pos.y = 0;
-	layer.Viewport[0].Size.w = bufferSize.w / 2;
-	layer.Viewport[0].Size.h = bufferSize.h / 2;
-	layer.Viewport[1].Pos.x = bufferSize.w / 2;
-	layer.Viewport[1].Pos.y = 0;
-	layer.Viewport[1].Size.w = bufferSize.w / 2;
-	layer.Viewport[1].Size.h = bufferSize.h / 2;
+	layer.Header.Flags = ovrLayerFlag_TextureOriginAtBottomLeft;   // Because OpenGL.
+
+	for (int eye = 0; eye < 2; eye++) {
+		layer.ColorTexture[eye] = this->m_eyeRenderTexture[eye]->TextureSet;
+		layer.Viewport[eye] = Recti(this->m_eyeRenderTexture[eye]->GetSize());
+		layer.Fov[eye] = this->m_eyeRenderDesc[eye].Fov;
+	}
 	// layer.RenderPose is updated later per frame
 
 	/* store data */
 	this->m_color_texture[0] = color_texture_left;
 	this->m_color_texture[1] = color_texture_right;
 	this->m_layer = layer;
+
+	// Configure the read buffer
+	for (int eye = 0; eye < 2; eye++) {
+		glGenFramebuffers(1, &this->m_fbo[eye]);
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, this->m_fbo[eye]);
+		glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_color_texture[eye], 0);
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+	}
+
+	// Turn off vsync to let the compositor do its magic
+	wglSwapIntervalEXT(0);
 
 	return true;
 };
@@ -202,15 +212,33 @@ bool Oculus::update(float *r_orientation_left, float *r_position_left, float *r_
 
 bool Oculus::frameReady()
 {
-	ovrLayerHeader *layers = &this->m_layer.Header;
-	ovrResult result = ovr_SubmitFrame(this->m_hmd, 0, nullptr, &layers, this->m_frame);
+	for (int eye = 0; eye < 2; eye++) {
+		// Increment to use next texture, just before writing
+		this->m_eyeRenderTexture[eye]->TextureSet->CurrentIndex = (this->m_eyeRenderTexture[eye]->TextureSet->CurrentIndex + 1) % this->m_eyeRenderTexture[eye]->TextureSet->TextureCount;
 
-	if (ovrSuccess == result) {
-		return true;
+		// Switch to eye render target
+		this->m_eyeRenderTexture[eye]->SetAndClearRenderSurface();
+
+		GLint w = this->m_eyeRenderTexture[eye]->texSize.w;
+		GLint h = this->m_eyeRenderTexture[eye]->texSize.h;
+
+		// copy result from color_texture to HMD
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, this->m_fbo[eye]);
+		glBlitFramebuffer(0, 0, w, h,
+		                  0, 0, w, h,
+		                  GL_COLOR_BUFFER_BIT, GL_NEAREST);
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+
+		this->m_eyeRenderTexture[eye]->UnsetRenderSurface();
 	}
-	else {
+
+	ovrLayerHeader *layers = &this->m_layer.Header;
+	ovrResult result = ovr_SubmitFrame(this->m_hmd, this->m_frame, nullptr, &layers, 1);
+
+	if (ovrSuccess != result)
 		return false;
-	}
+
+	return true;
 };
 
 bool Oculus::reCenter()
