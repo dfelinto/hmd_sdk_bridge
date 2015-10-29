@@ -17,6 +17,7 @@ def test_debug():
     input = 3
 
     debug = bridge_wrapper.Debug_new(input)
+    print("DEBUG instance: {0}".format(type(debug)))
     factor = bridge_wrapper.Debug_multiplicationFactor()
     print("Multiplication factor is {0}".format(factor))
 
@@ -62,4 +63,4 @@ def test_oculus():
 
 test_debug()
 
-test_oculus()
+#test_oculus()

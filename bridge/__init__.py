@@ -36,6 +36,7 @@ def load(name, win_lib=None, linux_lib=None, osx_lib=None):
             return
 
     libfile = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'dylibs', prefix + suffix, file)
+    print("Using DLL", libfile)
 
     if os.path.isfile(libfile):
         lib = load_library(libfile)
