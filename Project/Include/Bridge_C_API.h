@@ -1,9 +1,14 @@
 #ifndef __BRIDGE_C_API_H__
 #define __BRIDGE_C_API_H__
 
+//#define OCULUS
+
 #include "HMD.h"
-#include "Oculus.h"
 #include "Debug.h"
+
+#ifdef OCULUS
+#include "Oculus.h"
+#endif
 
 #if defined(_WIN32)
 #define EXPORT_LIB extern "C" __declspec(dllexport)
@@ -20,6 +25,7 @@ EXPORT_LIB void Debug_matrix(float *r_float) { Debug::matrix(r_float);}
 EXPORT_LIB void Debug_matrixNonStatic(Debug *debug, float *r_float) { debug->matrixNonStatic(r_float); }
 EXPORT_LIB void Debug_draw(const unsigned int color_texture) { Debug::draw(color_texture); }
 
+#ifdef OCULUS
 /* Oculus wrapper */
 EXPORT_LIB bool Oculus_initializeLibrary(){ return Oculus::initializeLibrary(); }
 EXPORT_LIB Oculus *Oculus_new(){ return new Oculus(); }
@@ -34,6 +40,7 @@ EXPORT_LIB unsigned int Oculus_widthRight(Oculus *oculus) { return oculus->getWi
 EXPORT_LIB unsigned int Oculus_heightRight(Oculus *oculus) { return oculus->getHeightRight(); }
 EXPORT_LIB void Oculus_projectionMatrixLeft(Oculus *oculus, const float nearz, const float farz, float *r_matrix) { oculus->getProjectionMatrixLeft(nearz, farz, r_matrix); }
 EXPORT_LIB void Oculus_projectionMatrixRight(Oculus *oculus, const float nearz, const float farz, float *r_matrix) { oculus->getProjectionMatrixRight(nearz, farz, r_matrix); }
+#endif
 
 #undef EXPORT_LIB
 #endif /* __BRIDGE_C_API_H__ */
