@@ -1,9 +1,6 @@
 #ifndef __BRIDGE_C_API_H__
 #define __BRIDGE_C_API_H__
 
-//#define OCULUS
-
-#include "HMD.h"
 #include "Debug.h"
 
 #ifdef OCULUS
