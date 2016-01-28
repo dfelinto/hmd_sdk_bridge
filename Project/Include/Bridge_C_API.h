@@ -7,8 +7,12 @@
 #include "Oculus.h"
 #endif
 
-#if defined(_WIN32)
+#if defined(_WIN32) || defined(_WIN64)
+#if defined DLL_EXPORT
 #define EXPORT_LIB extern "C" __declspec(dllexport)
+#else
+#define EXPORT_LIB extern "C" __declspec(dllimport)
+#endif
 #else
 #define EXPORT_LIB extern "C"
 #endif

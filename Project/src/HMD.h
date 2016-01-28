@@ -1,11 +1,21 @@
 #ifndef __HMD_H__
 #define __HMD_H__
 
-class HMD
+#if defined(_WIN32) || defined(_WIN64)
+
+#if !defined(DllExport)
+	#define DllExport   __declspec( dllexport )  
+#endif
+
+#else
+#define DllExport "" 
+#endif
+
+class DllExport HMD
 {
 public:
 	HMD();
-	~HMD();
+	virtual ~HMD();
 
 /* must inherit */
 	virtual bool setup(const unsigned int color_texture_left, const unsigned int color_texture_right) = 0;
