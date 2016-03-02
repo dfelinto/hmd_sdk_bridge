@@ -129,14 +129,15 @@ public:
 
 	bool reCenter(void);
 
-	void getProjectionMatrixLeft(const float nearz, const float farz, const bool is_opengl, float *r_matrix);
+	void getProjectionMatrixLeft(const float nearz, const float farz, const bool is_opengl, const bool is_right_hand, float *r_matrix);
 
-	void getProjectionMatrixRight(const float nearz, const float farz, const bool is_opengl, float *r_matrix);
+	void getProjectionMatrixRight(const float nearz, const float farz, const bool is_opengl, const bool is_right_hand, float *r_matrix);
 
 	static bool initializeLibrary(void);
 
 private:
 	bool isConnected(void);
+	unsigned int getProjectionMatrixFlags(const bool is_opengl, const bool is_right_hand);
 	unsigned int m_frame;
 	ovrHmd m_hmd;
 	ovrHmdDesc m_desc;

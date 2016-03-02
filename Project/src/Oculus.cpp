@@ -254,13 +254,9 @@ static void formatMatrix(ovrMatrix4f matrix, float *r_matrix)
 			r_matrix[i * 4 + j] = matrix.M[j][i];
 }
 
-void Oculus::getProjectionMatrixLeft(const float nearz, const float farz, const bool is_opengl, float *r_matrix)
+void Oculus::getProjectionMatrixLeft(const float nearz, const float farz, const bool is_opengl, const bool is_right_hand, float *r_matrix)
 {
-	unsigned int flags = ovrProjection_RightHanded;
-
-	if (is_opengl) {
-		flags |= ovrProjection_ClipRangeOpenGL;
-	}
+	unsigned int flags = getProjectionMatrixFlags(is_opengl, is_right_hand);
 
 	ovrMatrix4f matrix = ovrMatrix4f_Projection(
 		this->m_eyeRenderDesc[0].Fov,
@@ -271,13 +267,9 @@ void Oculus::getProjectionMatrixLeft(const float nearz, const float farz, const 
 	formatMatrix(matrix, r_matrix);
 }
 
-void Oculus::getProjectionMatrixRight(const float nearz, const float farz, const bool is_opengl, float *r_matrix)
+void Oculus::getProjectionMatrixRight(const float nearz, const float farz, const bool is_opengl, const bool is_right_hand, float *r_matrix)
 {
-	unsigned int flags = ovrProjection_RightHanded;
-
-	if (is_opengl) {
-		flags |= ovrProjection_ClipRangeOpenGL;
-	}
+	unsigned int flags = getProjectionMatrixFlags(is_opengl, is_right_hand);
 
 	ovrMatrix4f matrix = ovrMatrix4f_Projection(
 		this->m_eyeRenderDesc[1].Fov,
@@ -286,4 +278,14 @@ void Oculus::getProjectionMatrixRight(const float nearz, const float farz, const
 		flags);
 
 	formatMatrix(matrix, r_matrix);
+}
+
+unsigned int Oculus::getProjectionMatrixFlags(const bool is_opengl, const bool is_right_hand)
+{
+	unsigned int flags = is_right_hand ? ovrProjection_RightHanded : ovrProjection_None;
+
+	if (is_opengl) {
+		flags |= ovrProjection_ClipRangeOpenGL;
+	}
+	return flags;
 }

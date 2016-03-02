@@ -26,9 +26,9 @@ public:
 
 	virtual bool reCenter(void) = 0;
 
-	virtual void getProjectionMatrixLeft(const float nearz, const float farz, const bool is_opengl, float *r_matrix) = 0;
+	virtual void getProjectionMatrixLeft(const float nearz, const float farz, const bool is_opengl, const bool is_right_hand, float *r_matrix) = 0;
 
-	virtual void getProjectionMatrixRight(const float nearz, const float farz, const bool is_opengl, float *r_matrix) = 0;
+	virtual void getProjectionMatrixRight(const float nearz, const float farz, const bool is_opengl, const bool is_right_hand, float *r_matrix) = 0;
 
 /* generic */
 	int getWidthLeft() { return this->m_width[0]; }
@@ -42,6 +42,7 @@ protected:
 
 /* must inherit */
 	virtual bool isConnected(void) = 0;
+	virtual unsigned int getProjectionMatrixFlags(const bool is_opengl, const bool is_right_hand) = 0;
 
 	unsigned int m_color_texture[2];
 	unsigned int m_width[2];
