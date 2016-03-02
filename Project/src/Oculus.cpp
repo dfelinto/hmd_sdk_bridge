@@ -192,18 +192,18 @@ bool Oculus::update(float *r_orientation_left, float *r_position_left, float *r_
 		r_orientation_left[2] = this->m_layer.RenderPose[0].Orientation.y;
 		r_orientation_left[3] = this->m_layer.RenderPose[0].Orientation.z;
 
-		r_position_left[0] = this->m_layer.RenderPose[0].Position.x;
-		r_position_left[1] = this->m_layer.RenderPose[0].Position.y;
-		r_position_left[2] = this->m_layer.RenderPose[0].Position.z;
+		r_position_left[0] = this->m_scale * this->m_layer.RenderPose[0].Position.x;
+		r_position_left[1] = this->m_scale * this->m_layer.RenderPose[0].Position.y;
+		r_position_left[2] = this->m_scale * this->m_layer.RenderPose[0].Position.z;
 
 		r_orientation_right[0] = this->m_layer.RenderPose[1].Orientation.w;
 		r_orientation_right[1] = this->m_layer.RenderPose[1].Orientation.x;
 		r_orientation_right[2] = this->m_layer.RenderPose[1].Orientation.y;
 		r_orientation_right[3] = this->m_layer.RenderPose[1].Orientation.z;
 
-		r_position_right[0] = this->m_layer.RenderPose[1].Position.x;
-		r_position_right[1] = this->m_layer.RenderPose[1].Position.y;
-		r_position_right[2] = this->m_layer.RenderPose[1].Position.z;
+		r_position_right[0] = this->m_scale * this->m_layer.RenderPose[1].Position.x;
+		r_position_right[1] = this->m_scale * this->m_layer.RenderPose[1].Position.y;
+		r_position_right[2] = this->m_scale * this->m_layer.RenderPose[1].Position.z;
 
 		return true;
 	}

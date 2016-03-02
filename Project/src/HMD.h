@@ -35,6 +35,8 @@ public:
 	int getHeightLeft() { return this->m_height[0]; }
 	int getWidthRight() { return this->m_width[1]; }
 	int getHeightRight() { return this->m_height[1]; }
+	float getScale() { return this->m_scale; }
+	void setScale(const float scale) { this->m_scale = scale; }
 
 protected:
 
@@ -44,6 +46,7 @@ protected:
 	unsigned int m_color_texture[2];
 	unsigned int m_width[2];
 	unsigned int m_height[2];
+	float m_scale;
 };
 
 #endif /* __HMD_H__ */

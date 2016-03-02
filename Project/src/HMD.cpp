@@ -1,6 +1,7 @@
 #include "HMD.h"
 
-HMD::HMD()
+HMD::HMD():
+m_scale(1.0f)
 {
 }
 
