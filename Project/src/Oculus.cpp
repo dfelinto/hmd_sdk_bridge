@@ -1,4 +1,5 @@
 #include "Oculus.h"
+#include "Extras/OVR_Math.h"
 
 #include <iostream>
 
@@ -205,6 +206,37 @@ bool Oculus::update(float *r_orientation_left, float *r_position_left, float *r_
 		r_position_right[1] = this->m_scale * this->m_layer.RenderPose[1].Position.y;
 		r_position_right[2] = this->m_scale * this->m_layer.RenderPose[1].Position.z;
 
+		return true;
+	}
+	return false;
+};
+
+bool Oculus::update(
+	float *r_yaw_left, float *r_pitch_left, float *r_roll_left, float *r_position_left,
+	float *r_yaw_right, float *r_pitch_right, float *r_roll_right, float *r_position_right)
+{
+	/* Get both eye poses simultaneously, with IPD offset already included */
+	ovrFrameTiming ftiming = ovr_GetFrameTiming(this->m_hmd, ++this->m_frame);
+	ovrTrackingState hmdState = ovr_GetTrackingState(this->m_hmd, ftiming.DisplayMidpointSeconds);
+
+	if ((hmdState.StatusFlags & (ovrStatus_OrientationTracked | ovrStatus_PositionTracked)) != 0) {
+		ovr_CalcEyePoses(hmdState.HeadPose.ThePose, this->m_hmdToEyeViewOffset, this->m_layer.RenderPose);
+
+		Quatf quat;
+
+		quat = this->m_layer.RenderPose[0].Orientation;
+		quat.GetYawPitchRoll(r_yaw_left, r_pitch_left, r_roll_left);
+
+		quat = this->m_layer.RenderPose[1].Orientation;
+		quat.GetYawPitchRoll(r_yaw_right, r_pitch_right, r_roll_right);
+
+		r_position_left[0] = this->m_scale * this->m_layer.RenderPose[0].Position.x;
+		r_position_left[1] = this->m_scale * this->m_layer.RenderPose[0].Position.y;
+		r_position_left[2] = this->m_scale * this->m_layer.RenderPose[0].Position.z;
+
+		r_position_right[0] = this->m_scale * this->m_layer.RenderPose[1].Position.x;
+		r_position_right[1] = this->m_scale * this->m_layer.RenderPose[1].Position.y;
+		r_position_right[2] = this->m_scale * this->m_layer.RenderPose[1].Position.z;
 		return true;
 	}
 	return false;
