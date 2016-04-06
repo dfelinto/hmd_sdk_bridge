@@ -179,6 +179,13 @@ bool Oculus::setup(const unsigned int color_texture_left, const unsigned int col
 	return true;
 };
 
+static void formatMatrix(ovrMatrix4f matrix, float *r_matrix)
+{
+	for (int i = 0; i < 4; i++)
+		for (int j = 0; j < 4; j++)
+			r_matrix[i * 4 + j] = matrix.M[j][i];
+}
+
 bool Oculus::update(float *r_orientation_left, float *r_position_left, float *r_orientation_right, float *r_position_right)
 {
 	/* Get both eye poses simultaneously, with IPD offset already included */
@@ -188,23 +195,19 @@ bool Oculus::update(float *r_orientation_left, float *r_position_left, float *r_
 	if ((hmdState.StatusFlags & (ovrStatus_OrientationTracked | ovrStatus_PositionTracked)) != 0) {
 		ovr_CalcEyePoses(hmdState.HeadPose.ThePose, this->m_hmdToEyeViewOffset, this->m_layer.RenderPose);
 
-		r_orientation_left[0] = this->m_layer.RenderPose[0].Orientation.w;
-		r_orientation_left[1] = this->m_layer.RenderPose[0].Orientation.x;
-		r_orientation_left[2] = this->m_layer.RenderPose[0].Orientation.y;
-		r_orientation_left[3] = this->m_layer.RenderPose[0].Orientation.z;
+		float *orientation[2] = { r_orientation_left, r_orientation_right };
+		float *position[2] = { r_position_left, r_position_right };
 
-		r_position_left[0] = this->m_scale * this->m_layer.RenderPose[0].Position.x;
-		r_position_left[1] = this->m_scale * this->m_layer.RenderPose[0].Position.y;
-		r_position_left[2] = this->m_scale * this->m_layer.RenderPose[0].Position.z;
+		for (int eye = 0; eye < 2; eye++) {
+			orientation[eye][0] = this->m_layer.RenderPose[eye].Orientation.w;
+			orientation[eye][1] = this->m_layer.RenderPose[eye].Orientation.x;
+			orientation[eye][2] = this->m_layer.RenderPose[eye].Orientation.y;
+			orientation[eye][3] = this->m_layer.RenderPose[eye].Orientation.z;
 
-		r_orientation_right[0] = this->m_layer.RenderPose[1].Orientation.w;
-		r_orientation_right[1] = this->m_layer.RenderPose[1].Orientation.x;
-		r_orientation_right[2] = this->m_layer.RenderPose[1].Orientation.y;
-		r_orientation_right[3] = this->m_layer.RenderPose[1].Orientation.z;
-
-		r_position_right[0] = this->m_scale * this->m_layer.RenderPose[1].Position.x;
-		r_position_right[1] = this->m_scale * this->m_layer.RenderPose[1].Position.y;
-		r_position_right[2] = this->m_scale * this->m_layer.RenderPose[1].Position.z;
+			position[eye][0] = this->m_scale * this->m_layer.RenderPose[eye].Position.x;
+			position[eye][1] = this->m_scale * this->m_layer.RenderPose[eye].Position.y;
+			position[eye][2] = this->m_scale * this->m_layer.RenderPose[eye].Position.z;
+		}
 
 		return true;
 	}
@@ -278,13 +281,6 @@ bool Oculus::reCenter()
 	ovr_RecenterPose(this->m_hmd);
 	return true;
 };
-
-static void formatMatrix(ovrMatrix4f matrix, float *r_matrix)
-{
-	for (int i = 0; i < 4; i++)
-		for (int j = 0; j < 4; j++)
-			r_matrix[i * 4 + j] = matrix.M[j][i];
-}
 
 void Oculus::getProjectionMatrixLeft(const float nearz, const float farz, const bool is_opengl, const bool is_right_hand, float *r_matrix)
 {
