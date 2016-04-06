@@ -26,6 +26,8 @@ public:
 		float *r_yaw_left, float *r_pitch_left, float *r_roll_left, float *r_position_left,
 		float *r_yaw_right, float *r_pitch_right, float *r_roll_right, float *r_position_right) = 0;
 
+	virtual bool update(float *r_matrix_left, float *r_matrix_right) = 0;
+
 	virtual bool frameReady(void) = 0;
 
 	virtual bool reCenter(void) = 0;

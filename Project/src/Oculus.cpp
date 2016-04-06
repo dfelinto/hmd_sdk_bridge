@@ -245,6 +245,32 @@ bool Oculus::update(
 	return false;
 };
 
+bool Oculus::update(float *r_matrix_left, float *r_matrix_right)
+{
+	/* Get both eye poses simultaneously, with IPD offset already included */
+	ovrFrameTiming ftiming = ovr_GetFrameTiming(this->m_hmd, ++this->m_frame);
+	ovrTrackingState hmdState = ovr_GetTrackingState(this->m_hmd, ftiming.DisplayMidpointSeconds);
+
+	if ((hmdState.StatusFlags & (ovrStatus_OrientationTracked | ovrStatus_PositionTracked)) != 0) {
+		ovr_CalcEyePoses(hmdState.HeadPose.ThePose, this->m_hmdToEyeViewOffset, this->m_layer.RenderPose);
+
+		float *matrix[2] = { r_matrix_left, r_matrix_right };
+
+		for (int eye = 0; eye < 2; eye++) {
+			Vector3f pos = this->m_layer.RenderPose[eye].Position;
+			Matrix4f rot = Matrix4f(this->m_layer.RenderPose[eye].Orientation);
+
+			Vector3f finalUp = rot.Transform(Vector3f(0, 1, 0));
+			Vector3f finalForward = rot.Transform(Vector3f(0, 0, -1));
+			Matrix4f view = Matrix4f::LookAtRH(pos, pos + finalForward, finalUp);
+
+			formatMatrix(view, matrix[eye]);
+		}
+		return true;
+	}
+	return false;
+}
+
 bool Oculus::frameReady()
 {
 	for (int eye = 0; eye < 2; eye++) {
