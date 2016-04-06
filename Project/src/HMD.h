@@ -8,7 +8,7 @@
 #endif
 
 #else
-#define DllExport "" 
+#define DllExport
 #endif
 
 class DllExport HMD
