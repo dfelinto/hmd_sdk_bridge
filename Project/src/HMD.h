@@ -1,6 +1,10 @@
 #ifndef __HMD_H__
 #define __HMD_H__
 
+#include "Backend.h"
+
+#include "Oculus.h"
+
 #if defined(_WIN32) || defined(_WIN64)
 
 #if !defined(DllExport)
@@ -14,50 +18,86 @@
 class DllExport HMD
 {
 public:
-	HMD();
-	virtual ~HMD();
 
-/* must inherit */
-	virtual bool setup(const unsigned int color_texture_left, const unsigned int color_texture_right) = 0;
+	typedef enum eHMDBackend
+	{
+		BACKEND_OCULUS = 0,
+		BACKEND_OCULUS_LEGACY,
+		BACKEND_VIVE,
+		BACKEND_OSVR,
+		BACKEND_OPENVR,
+		BACKEND_OPENHMD,
+	};
 
-	virtual bool update(float *r_orientation_left, float *r_position_left, float *r_orientation_right, float *r_position_right) = 0;
+	HMD() { m_hmd = new Oculus(); }
 
-	virtual bool update(
+	HMD(eHMDBackend backend):
+		m_hmd(NULL)
+	{
+		switch (backend) {
+			case BACKEND_OCULUS:
+				m_hmd = new Oculus();
+				break;
+			case BACKEND_VIVE:
+			default:
+				break;
+		}
+	}
+
+	bool setup(const unsigned int color_texture_left, const unsigned int color_texture_right)
+	{
+		return m_hmd->setup(color_texture_left, color_texture_right);
+	}
+
+	bool update(float *r_orientation_left, float *r_position_left, float *r_orientation_right, float *r_position_right)
+	{
+		return m_hmd->update(r_orientation_left, r_orientation_right, r_position_left, r_position_right);
+	}
+
+	bool update(
 		float *r_yaw_left, float *r_pitch_left, float *r_roll_left, float *r_position_left,
-		float *r_yaw_right, float *r_pitch_right, float *r_roll_right, float *r_position_right) = 0;
+		float *r_yaw_right, float *r_pitch_right, float *r_roll_right, float *r_position_right)
+	{
+		return m_hmd->update(
+			r_yaw_left, r_pitch_left, r_roll_left, r_position_left,
+			r_yaw_right, r_pitch_right, r_roll_right, r_position_right);
+	}
 
-	virtual bool update(
+	bool update(
 		float *r_yaw_left, float *r_pitch_left, float *r_roll_left, float *r_orientation_left, float *r_position_left,
-		float *r_yaw_right, float *r_pitch_right, float *r_roll_right, float *r_orientation_right, float *r_position_right) = 0;
+		float *r_yaw_right, float *r_pitch_right, float *r_roll_right, float *r_orientation_right, float *r_position_right)
+	{
+		return m_hmd->update(
+			r_yaw_left, r_pitch_left, r_roll_left, r_orientation_left, r_position_left,
+			r_yaw_right, r_pitch_right, r_roll_right, r_orientation_right, r_position_right);
+	}
 
-	virtual bool update(float *r_matrix_left, float *r_matrix_right) = 0;
+	bool update(float *r_matrix_left, float *r_matrix_right) { return m_hmd->update(r_matrix_left, r_matrix_right); }
 
-	virtual bool frameReady(void) = 0;
+	bool frameReady(void) { return m_hmd->frameReady(); }
 
-	virtual bool reCenter(void) = 0;
+	bool reCenter(void) { return m_hmd->reCenter(); }
 
-	virtual void getProjectionMatrixLeft(const float nearz, const float farz, const bool is_opengl, const bool is_right_hand, float *r_matrix) = 0;
+	void getProjectionMatrixLeft(const float nearz, const float farz, const bool is_opengl, const bool is_right_hand, float *r_matrix)
+	{
+		return m_hmd->getProjectionMatrixLeft(nearz, farz, is_opengl, is_right_hand, r_matrix);
+	}
 
-	virtual void getProjectionMatrixRight(const float nearz, const float farz, const bool is_opengl, const bool is_right_hand, float *r_matrix) = 0;
+	void getProjectionMatrixRight(const float nearz, const float farz, const bool is_opengl, const bool is_right_hand, float *r_matrix)
+	{
+		return m_hmd->getProjectionMatrixRight(nearz, farz, is_opengl, is_right_hand, r_matrix);
+	}
 
 	/* generic */
-	int getWidthLeft() { return this->m_width[0]; }
-	int getHeightLeft() { return this->m_height[0]; }
-	int getWidthRight() { return this->m_width[1]; }
-	int getHeightRight() { return this->m_height[1]; }
-	float getScale() { return this->m_scale; }
-	void setScale(const float scale) { this->m_scale = scale; }
+	int getWidthLeft() { return m_hmd->getWidthLeft(); }
+	int getHeightLeft() { return m_hmd->getHeightLeft(); }
+	int getWidthRight() { return m_hmd->getWidthRight(); }
+	int getHeightRight() { return m_hmd->getHeightRight(); }
+	float getScale() { return m_hmd->getScale(); }
+	void setScale(const float scale) { m_hmd->setScale(scale); }
 
 protected:
-
-/* must inherit */
-	virtual bool isConnected(void) = 0;
-	virtual unsigned int getProjectionMatrixFlags(const bool is_opengl, const bool is_right_hand) = 0;
-
-	unsigned int m_color_texture[2];
-	unsigned int m_width[2];
-	unsigned int m_height[2];
-	float m_scale;
+	Backend *m_hmd;
 };
 
 #endif /* __HMD_H__ */

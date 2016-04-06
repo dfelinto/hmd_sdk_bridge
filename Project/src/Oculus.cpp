@@ -36,7 +36,7 @@ bool Oculus::initializeLibrary()
 	}
 }
 
-Oculus::Oculus():HMD()
+Oculus::Oculus():Backend()
 {
 	std::cout << "Oculus()" << std::endl;
 

@@ -4,12 +4,15 @@
 #include "GL/glew.h"
 #include "GL/wglew.h"
 
-#include "HMD.h"
 #include "OVR_CAPI_0_7_0.h"
 #include "OVR_CAPI_GL.h"
 
 #include <Extras/OVR_Math.h>
 #include <Kernel/OVR_Log.h>
+
+#include "Backend.h"
+
+using namespace OVR;
 
 #if defined(_WIN32) || defined(_WIN64)
 
@@ -18,11 +21,9 @@
 #endif
 
 #else
-#define DllExport "" 
+#define DllExport
 #endif
 
-
-using namespace OVR;
 
 typedef enum eLibStatus
 {
@@ -115,11 +116,11 @@ struct TextureBuffer
 };
 
 
-class DllExport Oculus : public HMD
+class DllExport Oculus : public Backend
 {
 public:
 	Oculus();
-	virtual ~Oculus();
+	~Oculus();
 
 	bool setup(const unsigned int color_texture_left, const unsigned int color_texture_right);
 
