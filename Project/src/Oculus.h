@@ -129,6 +129,10 @@ public:
 		float *r_yaw_left, float *r_pitch_left, float *r_roll_left, float *r_position_left,
 		float *r_yaw_right, float *r_pitch_right, float *r_roll_right, float *r_position_right);
 
+	bool update(
+		float *r_yaw_left, float *r_pitch_left, float *r_roll_left, float *r_orientation_left, float *r_position_left,
+		float *r_yaw_right, float *r_pitch_right, float *r_roll_right, float *r_orientation_right, float *r_position_right);
+
 	bool update(float *r_matrix_left, float *r_matrix_right);
 
 	bool frameReady(void);
