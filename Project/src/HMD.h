@@ -44,6 +44,8 @@ public:
 		}
 	}
 
+	~HMD(void) { delete m_hmd; }
+
 	bool setup(const unsigned int color_texture_left, const unsigned int color_texture_right)
 	{
 		return m_hmd->setup(color_texture_left, color_texture_right);
