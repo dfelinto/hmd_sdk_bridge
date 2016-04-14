@@ -1,16 +1,163 @@
 #include "Oculus.h"
+
+#include "GL/glew.h"
+#include "GL/wglew.h"
+
+#include "OVR_CAPI_0_7_0.h"
+#include "OVR_CAPI_GL.h"
+
 #include "Extras/OVR_Math.h"
+#include "Kernel/OVR_Log.h"
 
 #include <iostream>
 
+using namespace OVR;
+
+
 #define MAX(a,b) a > b ? a : b;
 
-eLibStatus Oculus::m_lib_status = LIB_UNLOADED;
+struct TextureBuffer;
 
-
-bool Oculus::initializeLibrary()
+typedef enum eLibStatus
 {
-	switch (Oculus::m_lib_status) {
+	LIB_UNLOADED = 0,
+	LIB_FAILED,
+	LIB_INITIALIZED,
+};
+
+class DllExport OculusImpl : protected Backend
+{
+public:
+	friend class Oculus;
+
+	OculusImpl();
+	~OculusImpl();
+
+	bool setup(const unsigned int color_texture_left, const unsigned int color_texture_right);
+
+	bool update(float *r_orientation_left, float *r_position_left, float *r_orientation_right, float *r_position_right);
+
+	bool update(
+		float *r_yaw_left, float *r_pitch_left, float *r_roll_left, float *r_position_left,
+		float *r_yaw_right, float *r_pitch_right, float *r_roll_right, float *r_position_right);
+
+	bool update(
+		float *r_yaw_left, float *r_pitch_left, float *r_roll_left, float *r_orientation_left, float *r_position_left,
+		float *r_yaw_right, float *r_pitch_right, float *r_roll_right, float *r_orientation_right, float *r_position_right);
+
+	bool update(float *r_matrix_left, float *r_matrix_right);
+
+	bool frameReady(void);
+
+	bool reCenter(void);
+
+	void getProjectionMatrixLeft(const float nearz, const float farz, const bool is_opengl, const bool is_right_hand, float *r_matrix);
+
+	void getProjectionMatrixRight(const float nearz, const float farz, const bool is_opengl, const bool is_right_hand, float *r_matrix);
+
+private:
+	bool isConnected(void);
+	unsigned int getProjectionMatrixFlags(const bool is_opengl, const bool is_right_hand);
+	static bool initializeLibrary(void);
+
+	unsigned int m_frame;
+	ovrHmd m_hmd;
+	ovrLayerEyeFov m_layer;
+
+	ovrEyeRenderDesc m_eyeRenderDesc[2];
+	ovrVector3f m_hmdToEyeViewOffset[2];
+	TextureBuffer *m_eyeRenderTexture[2];
+	static eLibStatus m_lib_status;
+	GLuint m_fbo[2];
+};
+
+eLibStatus OculusImpl::m_lib_status = LIB_UNLOADED;
+
+/* TextureBuffer copied/adapted from Oculus SDK samples */
+struct TextureBuffer
+{
+	ovrHmd              hmd;
+	ovrSwapTextureSet*  TextureSet;
+	GLuint              fboId;
+	Sizei               texSize;
+
+	TextureBuffer(ovrHmd hmd, Sizei size, int sampleCount) :
+		hmd(hmd),
+		TextureSet(nullptr),
+		fboId(0),
+		texSize(0, 0)
+	{
+		OVR_ASSERT(sampleCount <= 1); // The code doesn't currently handle MSAA textures.
+
+		texSize = size;
+
+		// This texture isn't necessarily going to be a rendertarget, but it usually is.
+		OVR_ASSERT(hmd); // No HMD? A little odd.
+		OVR_ASSERT(sampleCount == 1); // ovr_CreateSwapTextureSetD3D11 doesn't support MSAA.
+
+		ovrResult result = ovr_CreateSwapTextureSetGL(hmd, GL_SRGB8_ALPHA8, size.w, size.h, &TextureSet);
+
+		if (OVR_SUCCESS(result)) {
+			for (int i = 0; i < TextureSet->TextureCount; ++i) {
+				ovrGLTexture* tex = (ovrGLTexture*)&TextureSet->Textures[i];
+				glBindTexture(GL_TEXTURE_2D, tex->OGL.TexId);
+
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+			}
+
+			glGenFramebuffers(1, &fboId);
+		}
+	}
+
+	~TextureBuffer()
+	{
+		if (TextureSet) {
+			ovr_DestroySwapTextureSet(hmd, TextureSet);
+			TextureSet = nullptr;
+		}
+
+		if (fboId) {
+			glDeleteFramebuffers(1, &fboId);
+			fboId = 0;
+		}
+	}
+
+	Sizei GetSize() const
+	{
+		return texSize;
+	}
+
+	void SetAndClearRenderSurface()
+	{
+		auto tex = reinterpret_cast<ovrGLTexture*>(&TextureSet->Textures[TextureSet->CurrentIndex]);
+
+		/* push attributes */
+		glPushAttrib(GL_VIEWPORT_BIT | GL_SCISSOR_BIT);
+
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fboId);
+		glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex->OGL.TexId, 0);
+
+		glViewport(0, 0, texSize.w, texSize.h);
+		glScissor(0, 0, texSize.w, texSize.h);
+	}
+
+	void UnsetRenderSurface()
+	{
+		/* pop attributes */
+		glPopAttrib();
+
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fboId);
+		glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, 0, 0);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+	}
+};
+
+bool OculusImpl::initializeLibrary()
+{
+	switch (OculusImpl::m_lib_status) {
 	case LIB_FAILED:
 		return false;
 		break;
@@ -27,16 +174,16 @@ bool Oculus::initializeLibrary()
 	result = ovr_Initialize(nullptr);
 
 	if (OVR_FAILURE(result)) {
-		Oculus::m_lib_status = LIB_FAILED;
+		OculusImpl::m_lib_status = LIB_FAILED;
 		return false;
 	}
 	else {
-		Oculus::m_lib_status = LIB_INITIALIZED;
+		OculusImpl::m_lib_status = LIB_INITIALIZED;
 		return true;
 	}
 }
 
-Oculus::Oculus():Backend()
+OculusImpl::OculusImpl() :Backend()
 {
 	std::cout << "Oculus()" << std::endl;
 
@@ -44,11 +191,15 @@ Oculus::Oculus():Backend()
 	glewInit();
 
 	/* Make sure the library is loaded */
-	if (Oculus::initializeLibrary() == false)
+	if (OculusImpl::initializeLibrary() == false) {
+		std::cout << "libOVR could not initialize" << std::endl;
 		throw "libOVR could not initialize";
+	}
 
-	if (this->isConnected() == false)
+	if (this->isConnected() == false) {
+		std::cout << "Oculus not connected" << std::endl;
 		throw "Oculus not connected";
+	}
 
 	ovrHmd hmd;
 	ovrGraphicsLuid luid;
@@ -57,6 +208,7 @@ Oculus::Oculus():Backend()
 	ovrResult result = ovr_Create(&hmd, &luid);
 	if (OVR_FAILURE(result)) {
 		ovr_Shutdown();
+		std::cout << "Oculus could not initialize" << std::endl;
 		throw "Oculus could not initialize";
 	}
 
@@ -76,7 +228,6 @@ Oculus::Oculus():Backend()
 
 	/* initialize data */
 	this->m_hmd = hmd;
-	this->m_desc = desc;
 	this->m_eyeRenderDesc[0] = ovr_GetRenderDesc(hmd, ovrEye_Left, desc.DefaultEyeFov[0]);
 	this->m_eyeRenderDesc[1] = ovr_GetRenderDesc(hmd, ovrEye_Right, desc.DefaultEyeFov[1]);
 	this->m_hmdToEyeViewOffset[0] = this->m_eyeRenderDesc[0].HmdToEyeViewOffset;
@@ -90,11 +241,12 @@ Oculus::Oculus():Backend()
 	this->m_eyeRenderTexture[1] = NULL;
 	this->m_fbo[0] = 0;
 	this->m_fbo[1] = 0;
+	std::cout << "Oculus properly initialized (" << m_width[0] << "x" << m_height[0] << ", " << m_width[1] << "x" << m_height[1] << ")" << std::endl;
 }
 
-Oculus::~Oculus()
+OculusImpl::~OculusImpl()
 {
-	std::cout << "~Oculus" << std::endl;
+	std::cout << "~OculusImpl" << std::endl;
 
 	for (int eye = 0; eye < 2; eye++) {
 		if (this->m_eyeRenderTexture[eye])
@@ -110,13 +262,13 @@ Oculus::~Oculus()
 	/* the library needs to be re-loaded every time because the
 	 * Python wrapper keeps the static values
 	 */
-	Oculus::m_lib_status = LIB_UNLOADED;
+	OculusImpl::m_lib_status = LIB_UNLOADED;
 }
 
-bool Oculus::isConnected()
+bool OculusImpl::isConnected()
 {
 	/* Make sure the library is loaded */
-	if (Oculus::initializeLibrary() == false)
+	if (OculusImpl::initializeLibrary() == false)
 		throw "libOVR could not initialize";
 
 	ovrHmdDesc desc = ovr_GetHmdDesc(nullptr);
@@ -128,10 +280,8 @@ bool Oculus::isConnected()
 	}
 }
 
-bool Oculus::setup(const unsigned int color_texture_left, const unsigned int color_texture_right)
+bool OculusImpl::setup(const unsigned int color_texture_left, const unsigned int color_texture_right)
 {
-	
-
 	// Make eye render buffers
 	for (int eye = 0; eye < 2; eye++) {
 		ovrSizei idealTextureSize;
@@ -176,6 +326,7 @@ bool Oculus::setup(const unsigned int color_texture_left, const unsigned int col
 	// Turn off vsync to let the compositor do its magic
 	wglSwapIntervalEXT(0);
 
+	std::cout << "Oculus properly setup." << std::endl;
 	return true;
 };
 
@@ -186,7 +337,7 @@ static void formatMatrix(ovrMatrix4f matrix, float *r_matrix)
 			r_matrix[i * 4 + j] = matrix.M[j][i];
 }
 
-bool Oculus::update(float *r_orientation_left, float *r_position_left, float *r_orientation_right, float *r_position_right)
+bool OculusImpl::update(float *r_orientation_left, float *r_position_left, float *r_orientation_right, float *r_position_right)
 {
 	/* Get both eye poses simultaneously, with IPD offset already included */
 	ovrFrameTiming ftiming = ovr_GetFrameTiming(this->m_hmd, ++this->m_frame);
@@ -214,7 +365,7 @@ bool Oculus::update(float *r_orientation_left, float *r_position_left, float *r_
 	return false;
 };
 
-bool Oculus::update(
+bool OculusImpl::update(
 	float *r_yaw_left, float *r_pitch_left, float *r_roll_left, float *r_position_left,
 	float *r_yaw_right, float *r_pitch_right, float *r_roll_right, float *r_position_right)
 {
@@ -245,7 +396,7 @@ bool Oculus::update(
 	return false;
 };
 
-bool Oculus::update(
+bool OculusImpl::update(
 	float *r_yaw_left, float *r_pitch_left, float *r_roll_left, float *r_orientation_left, float *r_position_left,
 	float *r_yaw_right, float *r_pitch_right, float *r_roll_right, float *r_orientation_right, float *r_position_right)
 {
@@ -284,7 +435,7 @@ bool Oculus::update(
 	return false;
 }
 
-bool Oculus::update(float *r_matrix_left, float *r_matrix_right)
+bool OculusImpl::update(float *r_matrix_left, float *r_matrix_right)
 {
 	/* Get both eye poses simultaneously, with IPD offset already included */
 	ovrFrameTiming ftiming = ovr_GetFrameTiming(this->m_hmd, ++this->m_frame);
@@ -310,7 +461,7 @@ bool Oculus::update(float *r_matrix_left, float *r_matrix_right)
 	return false;
 }
 
-bool Oculus::frameReady()
+bool OculusImpl::frameReady()
 {
 	for (int eye = 0; eye < 2; eye++) {
 		// Increment to use next texture, just before writing
@@ -341,13 +492,13 @@ bool Oculus::frameReady()
 	return true;
 };
 
-bool Oculus::reCenter()
+bool OculusImpl::reCenter()
 {
 	ovr_RecenterPose(this->m_hmd);
 	return true;
 };
 
-void Oculus::getProjectionMatrixLeft(const float nearz, const float farz, const bool is_opengl, const bool is_right_hand, float *r_matrix)
+void OculusImpl::getProjectionMatrixLeft(const float nearz, const float farz, const bool is_opengl, const bool is_right_hand, float *r_matrix)
 {
 	unsigned int flags = getProjectionMatrixFlags(is_opengl, is_right_hand);
 
@@ -360,7 +511,7 @@ void Oculus::getProjectionMatrixLeft(const float nearz, const float farz, const 
 	formatMatrix(matrix, r_matrix);
 }
 
-void Oculus::getProjectionMatrixRight(const float nearz, const float farz, const bool is_opengl, const bool is_right_hand, float *r_matrix)
+void OculusImpl::getProjectionMatrixRight(const float nearz, const float farz, const bool is_opengl, const bool is_right_hand, float *r_matrix)
 {
 	unsigned int flags = getProjectionMatrixFlags(is_opengl, is_right_hand);
 
@@ -373,7 +524,7 @@ void Oculus::getProjectionMatrixRight(const float nearz, const float farz, const
 	formatMatrix(matrix, r_matrix);
 }
 
-unsigned int Oculus::getProjectionMatrixFlags(const bool is_opengl, const bool is_right_hand)
+unsigned int OculusImpl::getProjectionMatrixFlags(const bool is_opengl, const bool is_right_hand)
 {
 	unsigned int flags = is_right_hand ? ovrProjection_RightHanded : ovrProjection_None;
 
@@ -381,4 +532,99 @@ unsigned int Oculus::getProjectionMatrixFlags(const bool is_opengl, const bool i
 		flags |= ovrProjection_ClipRangeOpenGL;
 	}
 	return flags;
+}
+
+
+Oculus::Oculus() 
+	: Backend()
+	, m_me(new OculusImpl)
+{	
+}
+
+Oculus::~Oculus()
+{
+	delete this->m_me;
+}
+
+bool Oculus::setup(const unsigned int color_texture_left, const unsigned int color_texture_right)
+{
+	return this->m_me->setup(color_texture_left, color_texture_right);
+}
+
+bool Oculus::update(float *r_orientation_left, float *r_position_left, float *r_orientation_right, float *r_position_right)
+{
+	return this->m_me->update(r_orientation_left, r_position_left, r_orientation_right, r_position_right);
+}
+
+bool Oculus::update(
+	float *r_yaw_left, float *r_pitch_left, float *r_roll_left, float *r_position_left,
+	float *r_yaw_right, float *r_pitch_right, float *r_roll_right, float *r_position_right)
+{
+	return this->m_me->update(
+		r_yaw_left, r_pitch_left, r_roll_left, r_position_left,
+		r_yaw_right, r_pitch_right, r_roll_right, r_position_right);
+}
+
+bool Oculus::update(
+	float *r_yaw_left, float *r_pitch_left, float *r_roll_left, float *r_orientation_left, float *r_position_left,
+	float *r_yaw_right, float *r_pitch_right, float *r_roll_right, float *r_orientation_right, float *r_position_right)
+{
+	return this->m_me->update(
+		r_yaw_left, r_pitch_left, r_roll_left, r_orientation_left, r_position_left,
+		r_yaw_right, r_pitch_right, r_roll_right, r_orientation_right, r_position_right);
+}
+
+bool Oculus::update(float *r_matrix_left, float *r_matrix_right)
+{
+	return this->m_me->update(r_matrix_left, r_matrix_right);
+}
+
+bool Oculus::frameReady()
+{
+	return this->m_me->frameReady();
+}
+
+bool Oculus::reCenter()
+{
+	return this->m_me->reCenter();
+}
+
+void Oculus::getProjectionMatrixLeft(const float nearz, const float farz, const bool is_opengl, const bool is_right_hand, float *r_matrix)
+{
+	return this->m_me->getProjectionMatrixLeft(nearz, farz, is_opengl, is_right_hand, r_matrix);
+}
+
+void Oculus::getProjectionMatrixRight(const float nearz, const float farz, const bool is_opengl, const bool is_right_hand, float *r_matrix)
+{
+	return this->m_me->getProjectionMatrixRight(nearz, farz, is_opengl, is_right_hand, r_matrix);
+}
+
+int Oculus::getWidthLeft()
+{
+	return this->m_me->getWidthLeft();
+}
+
+int Oculus::getWidthRight()
+{
+	return this->m_me->getWidthRight();
+}
+
+int Oculus::getHeightLeft()
+{
+	return this->m_me->getHeightLeft();
+}
+
+int Oculus::getHeightRight()
+{
+	return this->m_me->getHeightRight();
+}
+
+float Oculus::getScale()
+{
+	return this->m_me->getScale();
+}
+
+void Oculus::setScale(const float scale)
+{
+	this->m_me->setScale(scale);
 }

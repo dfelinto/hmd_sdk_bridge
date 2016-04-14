@@ -48,11 +48,6 @@ public:
 	void setScale(const float scale) { this->m_scale = scale; }
 
 protected:
-
-	/* must inherit */
-	virtual bool isConnected(void) = 0;
-	virtual unsigned int getProjectionMatrixFlags(const bool is_opengl, const bool is_right_hand) = 0;
-
 	unsigned int m_color_texture[2];
 	unsigned int m_width[2];
 	unsigned int m_height[2];
