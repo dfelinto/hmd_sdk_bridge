@@ -53,7 +53,7 @@ public:
 
 	bool update(float *r_orientation_left, float *r_position_left, float *r_orientation_right, float *r_position_right)
 	{
-		return m_hmd->update(r_orientation_left, r_orientation_right, r_position_left, r_position_right);
+		return m_hmd->update(r_orientation_left, r_position_left, r_orientation_right, r_position_right);
 	}
 
 	bool update(
