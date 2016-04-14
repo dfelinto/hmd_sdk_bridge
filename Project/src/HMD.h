@@ -29,7 +29,7 @@ public:
 		BACKEND_OPENHMD,
 	};
 
-	HMD() { m_hmd = new Oculus(); }
+	HMD(): m_hmd(new Oculus) {}
 
 	HMD(eHMDBackend backend):
 		m_hmd(NULL)
@@ -44,7 +44,7 @@ public:
 		}
 	}
 
-	~HMD(void) { delete m_hmd; }
+        ~HMD(void) { if (m_hmd) delete m_hmd; }
 
 	bool setup(const unsigned int color_texture_left, const unsigned int color_texture_right)
 	{

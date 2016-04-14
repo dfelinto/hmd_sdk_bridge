@@ -543,7 +543,9 @@ Oculus::Oculus()
 
 Oculus::~Oculus()
 {
-	delete this->m_me;
+	if (this->m_me) {
+		delete this->m_me;
+	}
 }
 
 bool Oculus::setup(const unsigned int color_texture_left, const unsigned int color_texture_right)
