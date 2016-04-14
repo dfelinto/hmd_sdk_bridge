@@ -41,12 +41,12 @@ public:
 
 	void getProjectionMatrixRight(const float nearz, const float farz, const bool is_opengl, const bool is_right_hand, float *r_matrix);
 
-	int getWidthLeft(void);
-	int getWidthRight(void);
-	int getHeightLeft(void);
-	int getHeightRight(void);
-	float getScale(void);
-	void setScale(const float scale);
+	virtual int getWidthLeft(void);
+	virtual int getWidthRight(void);
+	virtual int getHeightLeft(void);
+	virtual int getHeightRight(void);
+	virtual float getScale(void);
+	virtual void setScale(const float scale);
 private:
 	class OculusImpl *m_me;
 };

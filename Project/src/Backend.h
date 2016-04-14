@@ -40,12 +40,12 @@ public:
 	virtual void getProjectionMatrixRight(const float nearz, const float farz, const bool is_opengl, const bool is_right_hand, float *r_matrix) = 0;
 
 	/* generic */
-	int getWidthLeft() { return this->m_width[0]; }
-	int getHeightLeft() { return this->m_height[0]; }
-	int getWidthRight() { return this->m_width[1]; }
-	int getHeightRight() { return this->m_height[1]; }
-	float getScale() { return this->m_scale; }
-	void setScale(const float scale) { this->m_scale = scale; }
+	virtual int getWidthLeft() { return this->m_width[0]; }
+	virtual int getHeightLeft() { return this->m_height[0]; }
+	virtual int getWidthRight() { return this->m_width[1]; }
+	virtual int getHeightRight() { return this->m_height[1]; }
+	virtual float getScale() { return this->m_scale; }
+	virtual void setScale(const float scale) { this->m_scale = scale; }
 
 protected:
 	unsigned int m_color_texture[2];
