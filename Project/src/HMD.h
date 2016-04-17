@@ -19,7 +19,7 @@ class DllExport HMD
 {
 public:
 
-	typedef enum eHMDBackend
+        enum eHMDBackend
 	{
 		BACKEND_OCULUS = 0,
 		BACKEND_OCULUS_LEGACY,
@@ -36,7 +36,9 @@ public:
 	{
 		switch (backend) {
 			case BACKEND_OCULUS:
+#if defined(_WIN32) || defined(_WIN64)
 				m_hmd = new Oculus();
+#endif
 				break;
 			case BACKEND_VIVE:
 			default:
