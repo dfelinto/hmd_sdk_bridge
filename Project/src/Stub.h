@@ -16,9 +16,6 @@
 class DllExport Stub : public Backend
 {
 public:
-	Stub();
-	~Stub();
-
 	bool setup(const unsigned int, const unsigned int) { return false;  }
 
 	bool update(float *, float *, float *, float *) { return false; }
