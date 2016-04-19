@@ -126,6 +126,7 @@
     <ClInclude Include="src/Oculus.h" />
     <ClInclude Include="src/Debug.h" />
     <ClInclude Include="src/Backend.h" />
+    <ClInclude Include="src/Stub.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="glew/src/glew.c" />

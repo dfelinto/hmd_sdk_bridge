@@ -4,6 +4,7 @@
 #include "Backend.h"
 
 #include "Oculus.h"
+#include "Stub.h"
 
 #if defined(_WIN32) || defined(_WIN64)
 
@@ -32,12 +33,14 @@ public:
 	HMD(): m_hmd(new Oculus) {}
 
 	HMD(eHMDBackend backend):
-		m_hmd(NULL)
+		m_hmd(nullptr)
 	{
 		switch (backend) {
 			case BACKEND_OCULUS:
 #if defined(_WIN32) || defined(_WIN64)
 				m_hmd = new Oculus();
+#else
+				m_hmd = new Stub();
 #endif
 				break;
 			case BACKEND_VIVE:
