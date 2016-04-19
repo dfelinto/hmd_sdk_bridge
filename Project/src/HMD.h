@@ -39,12 +39,11 @@ public:
 			case BACKEND_OCULUS:
 #if defined(_WIN32) || defined(_WIN64)
 				m_hmd = new Oculus();
-#else
-				m_hmd = new Stub();
-#endif
 				break;
+#endif
 			case BACKEND_VIVE:
 			default:
+				m_hmd = new Stub();
 				break;
 		}
 	}
