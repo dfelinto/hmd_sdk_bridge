@@ -27,13 +27,13 @@
     <ClInclude Include="src/HMD.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Oculus.h">
+    <ClInclude Include="src/Oculus.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Debug.h">
+    <ClInclude Include="src/Debug.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Backend.h">
+    <ClInclude Include="src/Backend.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src/Stub.h">
@@ -47,7 +47,7 @@
     <ClCompile Include="glew/src/glew.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Oculus.cpp">
+    <ClCompile Include="src/Oculus.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
