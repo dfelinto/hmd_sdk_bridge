@@ -16,7 +16,7 @@ class DllExport Backend
 public:
 	Backend():m_scale(1.0) {}
 
-	virtual ~Backend() {};
+	virtual ~Backend() {}
 
 	/* must inherit */
 	virtual bool setup(const unsigned int color_texture_left, const unsigned int color_texture_right) = 0;

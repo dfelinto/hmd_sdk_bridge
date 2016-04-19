@@ -49,7 +49,11 @@ public:
 		}
 	}
 
-        ~HMD(void) { if (m_hmd) delete m_hmd; }
+	~HMD(void) {
+		if (m_hmd) {
+			delete m_hmd;
+		}
+	}
 
 	bool setup(const unsigned int color_texture_left, const unsigned int color_texture_right)
 	{
