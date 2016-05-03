@@ -4,6 +4,7 @@
 #include "Backend.h"
 
 #include "Oculus.h"
+#include "OpenVR.h"
 #include "Vive.h"
 #include "Stub.h"
 
@@ -43,6 +44,10 @@ public:
 				m_hmd = new Oculus();
 				break;
 #endif
+			case BACKEND_OPENVR:
+			default:
+				m_hmd = new OpenVR();
+				break;
 			case BACKEND_VIVE:
 			default:
 				m_hmd = new Vive();

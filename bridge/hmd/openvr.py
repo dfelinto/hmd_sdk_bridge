@@ -18,20 +18,26 @@ from ctypes import (
 class HMD(baseHMD):
     def __init__(self):
         super(HMD, self).__init__()
+        self._device = bridge.HMD_new('BACKEND_OPENVR')
 
     def __del__(self):
+        bridge.HMD_del(self._device)
 
     @property
     def width_left(self):
+        return bridge.HMD_widthLeft(self._device)
 
     @property
     def width_right(self):
+        return bridge.HMD_widthRight(self._device)
 
     @property
     def height_left(self):
+        return bridge.HMD_heightLeft(self._device)
 
     @property
     def height_right(self):
+        return bridge.HMD_heightRight(self._device)
 
     def _getProjectionMatrix(self, near, far, bridge_func):
         arr = (c_float * 16)(*range(16))
@@ -40,8 +46,10 @@ class HMD(baseHMD):
 
     def _updateProjectionMatrix(self, near, far):
         self.projection_matrix_left = self._getProjectionMatrix(
+                near, far, bridge.HMD_projectionMatrixLeft)
 
         self.projection_matrix_right = self._getProjectionMatrix(
+                near, far, bridge.HMD_projectionMatrixRight)
 
     def setup(self, color_texture_left, color_texture_right):
         """
@@ -54,6 +62,7 @@ class HMD(baseHMD):
         :return: return True if the device was properly initialized
         :rtype: bool
         """
+        return bridge.HMD_setup(self._device, color_texture_left, color_texture_right)
 
     def update(self):
         """
@@ -72,6 +81,7 @@ class HMD(baseHMD):
         position_ptr[0] = (c_float * 3)(*range(3))
         position_ptr[1] = (c_float * 3)(*range(3))
 
+        if bridge.HMD_update(self._device, orientation_ptr[0], position_ptr[0], orientation_ptr[1], position_ptr[1]):
             self._orientation[0] = list(orientation_ptr[0])
             self._orientation[1] = list(orientation_ptr[1])
             self._position[0] = list(position_ptr[0])
@@ -86,6 +96,7 @@ class HMD(baseHMD):
         :return: return True if success
         :rtype: bool
         """
+        return bridge.HMD_frameReady(self._device)
 
     def reCenter(self):
         """
@@ -94,3 +105,4 @@ class HMD(baseHMD):
         :return: return True if success
         :rtype: bool
         """
+        return bridge.HMD_reCenter(self._device)
