@@ -16,42 +16,39 @@
 class DllExport OpenVR : public Backend
 {
 public:
-	bool setup(const unsigned int, const unsigned int) { return false;  }
+	OpenVR();
+	~OpenVR();
 
-	bool update(float *, float *, float *, float *) { return false; }
+	bool setup(const unsigned int, const unsigned int);
+
+	bool update(float *, float *, float *, float *);
 
 	bool update(
 		float *, float *, float *, float *,
-		float *, float *, float *, float *)
-	{
-		return false;
-	}
+		float *, float *, float *, float *);
 
 	bool update(
 		float *, float *, float *, float *, float *,
-		float *, float *, float *, float *, float *)
-	{
-		return false;
-	}
+		float *, float *, float *, float *, float *);
 
-	bool update(float *, float *)
-	{
-		return false;
-	}
+	bool update(float *, float *);
 
-	bool frameReady(void)
-	{
-		return false;
-	}
+	bool frameReady(void);
 
-	bool reCenter(void)
-	{
-		return false;
-	}
+	bool reCenter(void);
 
-	void getProjectionMatrixLeft(const float, const float, const bool, const bool, float *) {}
+	void getProjectionMatrixLeft(const float, const float, const bool, const bool, float *);
 
-	void getProjectionMatrixRight(const float, const float, const bool, const bool, float *) {}
+	void getProjectionMatrixRight(const float, const float, const bool, const bool, float *);
+
+	virtual int getWidthLeft(void);
+	virtual int getWidthRight(void);
+	virtual int getHeightLeft(void);
+	virtual int getHeightRight(void);
+	virtual float getScale(void);
+	virtual void setScale(const float scale);
+private:
+	class OpenVRImpl *m_me;
 };
 
 #endif /* __OPENVR_H__ */
