@@ -45,12 +45,13 @@ public:
 				break;
 #endif
 			case BACKEND_OPENVR:
-			default:
 				m_hmd = new OpenVR();
 				break;
 			case BACKEND_VIVE:
-			default:
 				m_hmd = new Vive();
+				break;
+			default:
+				m_hmd = new Stub();
 				break;
 		}
 	}

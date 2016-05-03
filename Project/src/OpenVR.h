@@ -1,5 +1,5 @@
-#ifndef __STUB_H__
-#define __STUB_H__
+#ifndef __OPENVR_H__
+#define __OPENVR_H__
 
 #include "Backend.h"
 
@@ -54,4 +54,4 @@ public:
 	void getProjectionMatrixRight(const float, const float, const bool, const bool, float *) {}
 };
 
-#endif /* __STUB_H__ */
+#endif /* __OPENVR_H__ */

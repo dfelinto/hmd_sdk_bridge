@@ -1,5 +1,5 @@
-#ifndef __Vive_H__
-#define __Vive_H__
+#ifndef __VIVE_H__
+#define __VIVE_H__
 
 #include "Backend.h"
 
@@ -54,4 +54,4 @@ public:
 	void getProjectionMatrixRight(const float, const float, const bool, const bool, float *) {}
 };
 
-#endif /* __Vive_H__ */
+#endif /* __VIVE_H__ */
