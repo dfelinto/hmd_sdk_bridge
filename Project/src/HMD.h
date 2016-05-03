@@ -4,7 +4,9 @@
 #include "Backend.h"
 
 #include "Oculus.h"
+#include "Vive.h"
 #include "Stub.h"
+
 
 #if defined(_WIN32) || defined(_WIN64)
 
@@ -43,7 +45,7 @@ public:
 #endif
 			case BACKEND_VIVE:
 			default:
-				m_hmd = new Stub();
+				m_hmd = new Vive();
 				break;
 		}
 	}
