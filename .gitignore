@@ -218,3 +218,5 @@ pip-log.txt
 input/
 OculusVR.dll
 BridgeLib.dll
+bridge/dylibs/win32-x86-64/BridgeLib.dll
+bridge/dylibs/win32-x86-64/BridgeLib.dll
