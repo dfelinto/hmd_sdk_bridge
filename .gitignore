@@ -220,3 +220,7 @@ OculusVR.dll
 BridgeLib.dll
 bridge/dylibs/win32-x86-64/BridgeLib.dll
 bridge/dylibs/win32-x86-64/BridgeLib.dll
+bridge/dylibs/win32-x86-64/glew32.dll
+bridge/dylibs/win32-x86/openvr_api.dll
+bridge/dylibs/win32-x86/glew32.dll
+bridge/dylibs/win32-x86-64/openvr_api.dll
