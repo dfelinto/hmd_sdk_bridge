@@ -9,19 +9,33 @@ It uses a python wrapper to connect with the SDK
 
 from . import HMD as baseHMD
 
+import glew32 as glew
+import openvr_api as openvr
 import bridge_wrapper as bridge
+
+import ctypes
 
 from ctypes import (
         c_float,
         )
 
 class HMD(baseHMD):
+
+    def init_ctypes(self):
+        """  I spent a day getting access violations.. I don't know how dalai's just seems to work but this one doesn't work without explicity setting the return types... baffled.
+        """
+        bridge.HMD_new.restype = ctypes.POINTER(ctypes.c_long)
+        bridge.HMD_getStatus.restype = ctypes.c_char_p
+        bridge.HMD_getStateBool.restype = ctypes.c_bool
+
     def __init__(self):
         super(HMD, self).__init__()
-        self._device = bridge.HMD_new('BACKEND_OPENVR')
+        self.init_ctypes()
+        self._device = bridge.HMD_new(4)
 
     def __del__(self):
         bridge.HMD_del(self._device)
+
 
     @property
     def width_left(self):
@@ -38,6 +52,20 @@ class HMD(baseHMD):
     @property
     def height_right(self):
         return bridge.HMD_heightRight(self._device)
+
+    @property
+    def height_right(self):
+        return bridge.HMD_heightRight(self._device)
+
+    def get_status(self):
+        ret = bridge.HMD_getStatus(self._device)
+        return str(ret, 'utf8')
+
+    def get_state_bool(self):
+        return bridge.HMD_getStateBool(self._device)
+
+
+
 
     def _getProjectionMatrix(self, near, far, bridge_func):
         arr = (c_float * 16)(*range(16))

@@ -17,6 +17,9 @@ class HMD:
         self._position = [[i for i in range(3)] for i in range(2)]
         self._width = [0, 0]
         self._height = [0, 0]
+        self._status = ""
+        self._state_bool = False
+
 
     @property
     def projection_matrix_left(self):
@@ -49,6 +52,13 @@ class HMD:
     @property
     def height_right(self):
         return self._height[1]
+
+    def get_status(self):
+        return self._status
+
+    def get_state_bool(self):
+        return self._state_bool
+
 
     def init(self):
         """

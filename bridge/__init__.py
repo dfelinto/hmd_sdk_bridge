@@ -47,5 +47,7 @@ def load(name, win_lib=None, linux_lib=None, osx_lib=None):
         print("lib \"{0}\" not found".format(libfile))
 
 
+load('glew32', win_lib='glew32.dll')
+load('openvr_api', win_lib='openvr_api.dll')
 load('bridge_wrapper', win_lib='BridgeLib.dll')
 load('oculus_legacy_base', win_lib='OculusVR.dll', linux_lib='libOculusVR.so', osx_lib='libOculusVR.dylib')
