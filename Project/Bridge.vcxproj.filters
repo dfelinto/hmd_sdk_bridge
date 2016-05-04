@@ -45,9 +45,6 @@
     <ClInclude Include="src/Stub.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Vive.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\shared\lodepng.h">
       <Filter>Header Files\shared</Filter>
     </ClInclude>

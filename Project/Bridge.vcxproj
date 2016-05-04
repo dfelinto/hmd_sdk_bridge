@@ -143,7 +143,6 @@
     <ClInclude Include="src\shared\Matrices.h" />
     <ClInclude Include="src\shared\pathtools.h" />
     <ClInclude Include="src\shared\Vectors.h" />
-    <ClInclude Include="src\Vive.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src/main.cpp">
