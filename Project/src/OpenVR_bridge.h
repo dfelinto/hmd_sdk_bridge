@@ -47,6 +47,10 @@ public:
 	virtual int getHeightRight(void);
 	virtual float getScale(void);
 	virtual void setScale(const float scale);
+	virtual const char* getStatus();
+	virtual void setStatus(const char* str);
+	virtual bool getStateBool();
+	virtual void setStateBool(bool b);
 private:
 	class OpenVRImpl *m_me;
 };

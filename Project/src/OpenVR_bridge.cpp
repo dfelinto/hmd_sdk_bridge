@@ -1,4 +1,3 @@
-#pragma once
 
 #include <SDL.h>
 #include <GL/glew.h>
@@ -124,6 +123,30 @@ OpenVRImpl::OpenVRImpl() :Backend()
 	this->m_fbo[0] = 0;
 	this->m_fbo[1] = 0;
 
+	this->m_width[0] = 0;
+	this->m_width[1] = 0;
+	this->m_height[0] = 0;
+	this->m_height[1] = 0;
+
+	this->m_status = "";
+
+	/* Make sure the library is loaded */
+	if (this->initializeLibrary() == false) {
+		
+		this->setStatus ( "Error: OpenVR library could not initialize" );
+		this->setStateBool(false);
+
+		std::cout << this->getStatus() << std::endl;
+	}
+
+
+	if (this->isConnected() == false) {
+		this->setStatus( "Error: OpenVR device not connected" );
+		this->setStateBool(false);
+
+		std::cout << this->getStatus() << std::endl;
+	}
+
 	std::cout << "OpenVR properly initialized (" << m_width[0] << "x" << m_height[0] << ", " << m_width[1] << "x" << m_height[1] << ")" << std::endl;
 }
 
@@ -205,94 +228,129 @@ unsigned int OpenVRImpl::getProjectionMatrixFlags(const bool is_opengl, const bo
 }
 
 
-// OpenVR Class
+
+
+
+
+
+
+
+// OpenVRBridge Class
 // -----------------------------------------------------------------
 
 OpenVRBridge::OpenVRBridge()
 	: Backend()
+	, m_me(new OpenVRImpl)
 {	
 }
 
 OpenVRBridge::~OpenVRBridge()
 {
-
+	if (this->m_me) {
+		delete this->m_me;
+	}
 }
 
 bool OpenVRBridge::setup(const unsigned int color_texture_left, const unsigned int color_texture_right)
 {
-	return false;
+	return this->m_me->setup(color_texture_left, color_texture_right);
 }
 
 bool OpenVRBridge::update(float *r_orientation_left, float *r_position_left, float *r_orientation_right, float *r_position_right)
 {
-	return false;
+	return this->m_me->update(r_orientation_left, r_position_left, r_orientation_right, r_position_right);
 }
 
 bool OpenVRBridge::update(
 	float *r_yaw_left, float *r_pitch_left, float *r_roll_left, float *r_position_left,
 	float *r_yaw_right, float *r_pitch_right, float *r_roll_right, float *r_position_right)
 {
-	return false;
+	return this->m_me->update(
+		r_yaw_left, r_pitch_left, r_roll_left, r_position_left,
+		r_yaw_right, r_pitch_right, r_roll_right, r_position_right);
 }
 
 bool OpenVRBridge::update(
 	float *r_yaw_left, float *r_pitch_left, float *r_roll_left, float *r_orientation_left, float *r_position_left,
 	float *r_yaw_right, float *r_pitch_right, float *r_roll_right, float *r_orientation_right, float *r_position_right)
 {
-	return false;
+	return this->m_me->update(
+		r_yaw_left, r_pitch_left, r_roll_left, r_orientation_left, r_position_left,
+		r_yaw_right, r_pitch_right, r_roll_right, r_orientation_right, r_position_right);
 }
 
 bool OpenVRBridge::update(float *r_matrix_left, float *r_matrix_right)
 {
-	return false;
+	return this->m_me->update(r_matrix_left, r_matrix_right);
 }
 
 bool OpenVRBridge::frameReady()
 {
-	return false;
+	return this->m_me->frameReady();
 }
 
 bool OpenVRBridge::reCenter()
 {
-	return false;
+	return this->m_me->reCenter();
 }
 
 void OpenVRBridge::getProjectionMatrixLeft(const float nearz, const float farz, const bool is_opengl, const bool is_right_hand, float *r_matrix)
 {
-
+	return this->m_me->getProjectionMatrixLeft(nearz, farz, is_opengl, is_right_hand, r_matrix);
 }
 
 void OpenVRBridge::getProjectionMatrixRight(const float nearz, const float farz, const bool is_opengl, const bool is_right_hand, float *r_matrix)
 {
-
+	return this->m_me->getProjectionMatrixRight(nearz, farz, is_opengl, is_right_hand, r_matrix);
 }
 
 int OpenVRBridge::getWidthLeft()
 {
-	return 0;
+	return this->m_me->getWidthLeft();
 }
 
 int OpenVRBridge::getWidthRight()
 {
-	return 0;
+	return this->m_me->getWidthRight();
 }
 
 int OpenVRBridge::getHeightLeft()
 {
-	return 0;
+	return this->m_me->getHeightLeft();
 }
 
 int OpenVRBridge::getHeightRight()
 {
-	return 0;
+	return this->m_me->getHeightRight();
 }
 
 float OpenVRBridge::getScale()
 {
-	return 0.0f;
+	return this->m_me->getScale();
 }
 
 void OpenVRBridge::setScale(const float scale)
 {
-	
+	this->m_me->setScale(scale);
 }
+
+const char* OpenVRBridge::getStatus()
+{
+	return this->m_me->getStatus();
+}
+
+void OpenVRBridge::setStatus(const char* str)
+{
+	this->m_me->setStatus(str);
+}
+
+bool OpenVRBridge::getStateBool()
+{
+	return this->m_me->getStateBool();
+}
+
+void OpenVRBridge::setStateBool(bool b)
+{
+	this->m_me->setStateBool(b);
+}
+

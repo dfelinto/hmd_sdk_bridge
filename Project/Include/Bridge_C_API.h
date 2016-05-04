@@ -38,6 +38,8 @@ EXPORT_LIB void HMD_projectionMatrixLeft(HMD *hmd, const float nearz, const floa
 EXPORT_LIB void HMD_projectionMatrixRight(HMD *hmd, const float nearz, const float farz, float *r_matrix) { hmd->getProjectionMatrixRight(nearz, farz, true, true, r_matrix); }
 EXPORT_LIB float HMD_scaleGet(HMD *hmd) { return hmd->getScale(); }
 EXPORT_LIB void HMD_scaleSet(HMD *hmd, const float scale) { hmd->setScale(scale); }
+EXPORT_LIB const char* HMD_getStatus(HMD *hmd) { return hmd->getStatus(); }
+EXPORT_LIB bool HMD_getStateBool(HMD *hmd) { return hmd->getStateBool(); }
 
 #ifdef OCULUS
 /* Oculus wrapper - kept for backward compatibility */
@@ -55,6 +57,8 @@ EXPORT_LIB void Oculus_projectionMatrixLeft(HMD *hmd, const float nearz, const f
 EXPORT_LIB void Oculus_projectionMatrixRight(HMD *hmd, const float nearz, const float farz, float *r_matrix) { hmd->getProjectionMatrixRight(nearz, farz, true, true, r_matrix); }
 EXPORT_LIB float Oculus_scaleGet(HMD *hmd) { return hmd->getScale(); }
 EXPORT_LIB void Oculus_scaleSet(HMD *hmd, const float scale) { hmd->setScale(scale); }
+EXPORT_LIB const char* Oculus_getStatus(HMD *hmd) { return hmd->getStatus(); }
+EXPORT_LIB bool Oculus_getStateBool(HMD *hmd) { return hmd->getStateBool(); }
 #endif
 
 #undef EXPORT_LIB

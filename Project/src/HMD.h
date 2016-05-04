@@ -5,7 +5,6 @@
 
 #include "Oculus.h"
 #include "OpenVR_bridge.h"
-#include "Vive.h"
 #include "Stub.h"
 
 
@@ -23,7 +22,7 @@ class DllExport HMD
 {
 public:
 
-        enum eHMDBackend
+    enum eHMDBackend
 	{
 		BACKEND_OCULUS = 0,
 		BACKEND_OCULUS_LEGACY,
@@ -48,7 +47,7 @@ public:
 				m_hmd = new OpenVRBridge();
 				break;
 			case BACKEND_VIVE:
-				m_hmd = new Vive();
+				m_hmd = new OpenVRBridge();
 				break;
 			default:
 				m_hmd = new Stub();
@@ -113,6 +112,11 @@ public:
 	int getHeightRight() { return m_hmd->getHeightRight(); }
 	float getScale() { return m_hmd->getScale(); }
 	void setScale(const float scale) { m_hmd->setScale(scale); }
+
+	const char* getStatus() { return m_hmd->getStatus(); };
+	bool getStateBool() { return m_hmd->getStateBool(); };
+
+	
 
 protected:
 	Backend *m_hmd;
