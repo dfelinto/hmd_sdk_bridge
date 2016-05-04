@@ -4,7 +4,7 @@
 #include "Backend.h"
 
 #include "Oculus.h"
-#include "OpenVR.h"
+#include "OpenVR_bridge.h"
 #include "Vive.h"
 #include "Stub.h"
 
@@ -45,7 +45,7 @@ public:
 				break;
 #endif
 			case BACKEND_OPENVR:
-				m_hmd = new OpenVR();
+				m_hmd = new OpenVRBridge();
 				break;
 			case BACKEND_VIVE:
 				m_hmd = new Vive();

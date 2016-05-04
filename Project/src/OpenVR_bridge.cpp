@@ -1,3 +1,4 @@
+#pragma once
 
 #include <SDL.h>
 #include <GL/glew.h>
@@ -6,6 +7,7 @@
 #include <stdio.h>
 #include <string>
 #include <cstdlib>
+#include <iostream>
 
 #include <openvr.h>
 
@@ -13,16 +15,12 @@
 #include "shared/Matrices.h"
 #include "shared/pathtools.h"
 
-#include "OpenVR.h"
-
-#include <iostream>
+#include "OpenVR_bridge.h"
 
 
-using namespace vr;
+// using namespace vr;
 
 
-
-struct TextureBuffer;
 
 typedef enum eLibStatus
 {
@@ -34,7 +32,7 @@ typedef enum eLibStatus
 class DllExport OpenVRImpl : protected Backend
 {
 public:
-	friend class OpenVR;
+	friend class OpenVRBridge;
 
 	OpenVRImpl();
 	~OpenVRImpl();
@@ -61,13 +59,17 @@ public:
 
 	void getProjectionMatrixRight(const float nearz, const float farz, const bool is_opengl, const bool is_right_hand, float *r_matrix);
 
+	
+
 private:
 	bool isConnected(void);
 	unsigned int getProjectionMatrixFlags(const bool is_opengl, const bool is_right_hand);
-	static bool initializeLibrary(void);
+	bool initializeLibrary(void);
 
 	unsigned int m_frame;
-	
+
+	vr::IVRSystem *m_pHMDy;
+
 	static eLibStatus m_lib_status;
 	GLuint m_fbo[2];
 };
@@ -75,8 +77,11 @@ private:
 eLibStatus OpenVRImpl::m_lib_status = LIB_UNLOADED;
 
 
+
 bool OpenVRImpl::initializeLibrary()
 {
+	vr::EVRInitError eError;
+
 	switch (OpenVRImpl::m_lib_status) {
 	case LIB_FAILED:
 		return false;
@@ -87,6 +92,19 @@ bool OpenVRImpl::initializeLibrary()
 	case LIB_UNLOADED:
 	default:
 		/* try to load the library */
+		// Loading the SteamVR Runtime
+		vr::EVRInitError eError = vr::VRInitError_None;
+		m_pHMDy = vr::VR_Init(&eError, vr::VRApplication_Scene);
+
+		if (eError != vr::VRInitError_None)
+		{
+			m_pHMDy = NULL;
+			char buf[1024];
+			sprintf_s(buf, sizeof(buf), "Unable to init VR runtime: %s", vr::VR_GetVRInitErrorAsEnglishDescription(eError));
+			// SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "VR_Init Failed", buf, NULL);
+			return false;
+		}
+		return true;
 		break;
 	}
 
@@ -190,91 +208,91 @@ unsigned int OpenVRImpl::getProjectionMatrixFlags(const bool is_opengl, const bo
 // OpenVR Class
 // -----------------------------------------------------------------
 
-OpenVR::OpenVR() 
+OpenVRBridge::OpenVRBridge()
 	: Backend()
 {	
 }
 
-OpenVR::~OpenVR()
+OpenVRBridge::~OpenVRBridge()
 {
 
 }
 
-bool OpenVR::setup(const unsigned int color_texture_left, const unsigned int color_texture_right)
-{
-	return false;
-}
-
-bool OpenVR::update(float *r_orientation_left, float *r_position_left, float *r_orientation_right, float *r_position_right)
+bool OpenVRBridge::setup(const unsigned int color_texture_left, const unsigned int color_texture_right)
 {
 	return false;
 }
 
-bool OpenVR::update(
+bool OpenVRBridge::update(float *r_orientation_left, float *r_position_left, float *r_orientation_right, float *r_position_right)
+{
+	return false;
+}
+
+bool OpenVRBridge::update(
 	float *r_yaw_left, float *r_pitch_left, float *r_roll_left, float *r_position_left,
 	float *r_yaw_right, float *r_pitch_right, float *r_roll_right, float *r_position_right)
 {
 	return false;
 }
 
-bool OpenVR::update(
+bool OpenVRBridge::update(
 	float *r_yaw_left, float *r_pitch_left, float *r_roll_left, float *r_orientation_left, float *r_position_left,
 	float *r_yaw_right, float *r_pitch_right, float *r_roll_right, float *r_orientation_right, float *r_position_right)
 {
 	return false;
 }
 
-bool OpenVR::update(float *r_matrix_left, float *r_matrix_right)
+bool OpenVRBridge::update(float *r_matrix_left, float *r_matrix_right)
 {
 	return false;
 }
 
-bool OpenVR::frameReady()
+bool OpenVRBridge::frameReady()
 {
 	return false;
 }
 
-bool OpenVR::reCenter()
+bool OpenVRBridge::reCenter()
 {
 	return false;
 }
 
-void OpenVR::getProjectionMatrixLeft(const float nearz, const float farz, const bool is_opengl, const bool is_right_hand, float *r_matrix)
+void OpenVRBridge::getProjectionMatrixLeft(const float nearz, const float farz, const bool is_opengl, const bool is_right_hand, float *r_matrix)
 {
 
 }
 
-void OpenVR::getProjectionMatrixRight(const float nearz, const float farz, const bool is_opengl, const bool is_right_hand, float *r_matrix)
+void OpenVRBridge::getProjectionMatrixRight(const float nearz, const float farz, const bool is_opengl, const bool is_right_hand, float *r_matrix)
 {
 
 }
 
-int OpenVR::getWidthLeft()
-{
-	return 0;
-}
-
-int OpenVR::getWidthRight()
+int OpenVRBridge::getWidthLeft()
 {
 	return 0;
 }
 
-int OpenVR::getHeightLeft()
+int OpenVRBridge::getWidthRight()
 {
 	return 0;
 }
 
-int OpenVR::getHeightRight()
+int OpenVRBridge::getHeightLeft()
 {
 	return 0;
 }
 
-float OpenVR::getScale()
+int OpenVRBridge::getHeightRight()
+{
+	return 0;
+}
+
+float OpenVRBridge::getScale()
 {
 	return 0.0f;
 }
 
-void OpenVR::setScale(const float scale)
+void OpenVRBridge::setScale(const float scale)
 {
 	
 }

@@ -1,5 +1,5 @@
-#ifndef __OPENVR_H__
-#define __OPENVR_H__
+#ifndef __OPENVRBRIDGE_H__
+#define __OPENVRBRIDGE_H__
 
 #include "Backend.h"
 
@@ -13,11 +13,11 @@
 #define DllExport
 #endif
 
-class DllExport OpenVR : public Backend
+class DllExport OpenVRBridge : public Backend
 {
 public:
-	OpenVR();
-	~OpenVR();
+	OpenVRBridge();
+	~OpenVRBridge();
 
 	bool setup(const unsigned int, const unsigned int);
 
@@ -51,4 +51,4 @@ private:
 	class OpenVRImpl *m_me;
 };
 
-#endif /* __OPENVR_H__ */
+#endif /* __OPENVRBRIDGE_H__ */
