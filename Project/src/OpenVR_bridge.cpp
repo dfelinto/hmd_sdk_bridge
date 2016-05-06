@@ -63,11 +63,16 @@ private:
 	unsigned int getProjectionMatrixFlags(const bool is_opengl, const bool is_right_hand);
 	bool initializeLibrary(void);
 	bool initializeCompositor(void);
+	bool initializeOverlay(void);
 	Matrix4 ConvertSteamVRMatrixToMatrix4(const vr::HmdMatrix34_t &matPose);
+	Matrix4 GetCurrentViewProjectionMatrix(vr::Hmd_Eye nEye);
 	void UpdateHMDMatrixPose();
 
 	unsigned int m_frame;
 	vr::IVRSystem *m_pHMDy;
+	vr::IVRRenderModels *m_pRenderModels;
+	vr::IVRCompositor *m_pCompositor;
+	vr::VROverlayHandle_t m_OverlayHandle;
 	static eLibStatus m_lib_status;
 	Matrix4 m_rMat4TrackedPose[vr::k_unMaxTrackedDeviceCount];
 	Matrix4 m_rmat4DevicePose[ vr::k_unMaxTrackedDeviceCount ];
@@ -117,13 +122,32 @@ bool OpenVRImpl::initializeLibrary()
 
 bool OpenVRImpl::initializeCompositor() 
 {
-	vr::EVRInitError peError = vr::VRInitError_None;
+	this->m_pCompositor = vr::VRCompositor();
 
-	if (!vr::VRCompositor())
+	if (!this->m_pCompositor)
 	{
 		return false;
 	}
 	return true;
+}
+
+bool OpenVRImpl::initializeOverlay()
+{
+	vr::EVROverlayError peError = vr::VROverlayError_None;
+
+	if (vr::VROverlay())
+	{
+		peError = vr::VROverlay()->CreateOverlay("cdBridgeLibOverlay", "Blender HMD Bridge Overlay", &m_OverlayHandle);
+
+		if (peError == vr::VROverlayError_None) return true;
+		else 
+		{
+			std::string s = std::to_string((int)peError);
+			std::cout << "Error: VROverlayError: #" << s << std::endl ;
+		}
+	}
+
+	return false;
 }
 
 Matrix4 OpenVRImpl::ConvertSteamVRMatrixToMatrix4(const vr::HmdMatrix34_t &matPose)
@@ -142,7 +166,7 @@ void OpenVRImpl::UpdateHMDMatrixPose()
 	if (!m_pHMDy)
 		return;
 
-	vr::VRCompositor()->WaitGetPoses(m_rTrackedDevicePose, vr::k_unMaxTrackedDeviceCount, NULL, 0);
+	this->m_pCompositor->WaitGetPoses(m_rTrackedDevicePose, vr::k_unMaxTrackedDeviceCount, NULL, 0);
 
 	int m_iValidPoseCount = 0;
 	std::string m_strPoseClasses = "";
@@ -210,7 +234,6 @@ OpenVRImpl::OpenVRImpl()
 		std::cout << this->getStatus() << std::endl;
 	}
 
-
 	if (this->initializeCompositor() == false) {
 		this->setStatus("Compositor initialization failed.\n");
 		this->setStateBool(false);
@@ -218,7 +241,14 @@ OpenVRImpl::OpenVRImpl()
 		std::cout << this->getStatus() << std::endl;
 	}
 
-	this->m_status = "After Init Library and Init Constructor";
+	if (this->initializeOverlay() == false)
+	{
+		this->setStatus("Overlay initialization failed.\n");
+		this->setStateBool(false);
+	}
+
+
+	this->m_status = "After Init Library, Compositor and Overlay";
 
 	if (this->getStateBool())
 	{
@@ -253,6 +283,18 @@ bool OpenVRImpl::setup(const unsigned int color_texture_left, const unsigned int
 		glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_color_texture[eye], 0);
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
 	}
+
+
+	// Old overlay code
+	//GLuint unTexture = m_pFbo->texture();
+	//GLuint unTexture = color_texture_left;
+	//vr::Texture_t texture = { (void*)unTexture, vr::API_OpenGL, vr::ColorSpace_Auto };
+	//vr::VROverlay()->SetOverlayTexture(m_OverlayHandle, &texture);
+
+
+	// Focus
+	this->m_pCompositor->CompositorBringToFront();
+
 
 	std::cout << "OpenVR setup() inside BridgeLib.dll complete." << std::endl;
 	return true;
@@ -296,12 +338,45 @@ bool OpenVRImpl::update(float *r_matrix_left, float *r_matrix_right)
 
 bool OpenVRImpl::frameReady()
 {
+
+	// We must call WaitGetPoses before the Compositor gets focus
+	// The following member function includes for this...
+	this->UpdateHMDMatrixPose();
+
+	if (!this->m_pCompositor->CanRenderScene()) {
+		// this->setStatus("CanRenderScene() returned false");
+		std::cout << "CanRenderScene() returned false" << std::endl;
+		return false;
+	}
+	vr::EVRCompositorError err = vr::VRCompositorError_None;
+
 	/* Renders the Frame */
-	for (int eye = 0; eye < 2; eye++) {
-		
+	for (int eye = 0; eye < 2; eye++)
+	{
+		vr::EVREye eEye = (vr::EVREye)eye;
+
+		vr::Texture_t texture = { (void*)this->m_color_texture[eye], vr::API_OpenGL, vr::ColorSpace_Auto };
+
+		vr::VRTextureBounds_t bounds;
+		bounds.uMin = (eye == 0) ? 0.0f : 0.5f;
+		bounds.uMax = (eye == 0) ? 0.5f : 1.0f;
+		bounds.vMin = 0.f;
+		bounds.vMax = 1.f;
+
+		err = this->m_pCompositor->Submit(eEye, &texture, &bounds);
+
+		if (err != vr::VRCompositorError_None)
+		{
+			printf("Compositor Submit error: %d\n", err);
+			return false;
+		}
+		//else
+		//{
+		//	std::cout << "We got here and no error?!?!" << std::endl;
+		//}
 	}
 
-	return false;
+	return true;
 };
 
 bool OpenVRImpl::reCenter()
@@ -324,6 +399,21 @@ void OpenVRImpl::getProjectionMatrixRight(const float nearz, const float farz, c
 unsigned int OpenVRImpl::getProjectionMatrixFlags(const bool is_opengl, const bool is_right_hand)
 {
 	return 0;
+}
+
+Matrix4 OpenVRImpl::GetCurrentViewProjectionMatrix(vr::Hmd_Eye nEye)
+{
+	Matrix4 matMVP;
+	if (nEye == vr::Eye_Left)
+	{
+	//	matMVP = m_mat4ProjectionLeft * m_mat4eyePosLeft * m_mat4HMDPose;
+	}
+	else if (nEye == vr::Eye_Right)
+	{
+	//	matMVP = m_mat4ProjectionRight * m_mat4eyePosRight *  m_mat4HMDPose;
+	}
+
+	return matMVP;
 }
 
 
