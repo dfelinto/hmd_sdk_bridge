@@ -60,6 +60,9 @@
     <ClInclude Include="src\OpenVR_bridge.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\shared\MatrixQuaternionMath.h">
+      <Filter>Header Files\shared</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src/main.cpp">
