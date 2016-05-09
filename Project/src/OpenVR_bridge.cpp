@@ -1,3 +1,4 @@
+#define DEBUG true;
 
 #include <SDL.h>
 #include <GL/glew.h>
@@ -13,6 +14,7 @@
 #include "shared/lodepng.h"
 #include "shared/Matrices.h"
 #include "shared/pathtools.h"
+#include "shared/MatrixQuaternionMath.h"
 
 #include "OpenVR_bridge.h"
 
@@ -59,15 +61,27 @@ public:
 	
 
 private:
-	bool isConnected(void);
 	unsigned int getProjectionMatrixFlags(const bool is_opengl, const bool is_right_hand);
 	bool initializeLibrary(void);
 	bool initializeCompositor(void);
 	bool initializeOverlay(void);
+	void SetupCameras();
+
+	Matrix4 GetHMDMatrixProjectionEye(vr::Hmd_Eye nEye);
+	Matrix4 GetHMDMatrixProjectionEye(vr::Hmd_Eye nEye, float fNearClip, float fFarClip, bool isOpenGL);
+
+	Matrix4	GetHMDMatrixPoseEye(vr::Hmd_Eye nEye);
 	Matrix4 ConvertSteamVRMatrixToMatrix4(const vr::HmdMatrix34_t &matPose);
 	Matrix4 GetCurrentViewProjectionMatrix(vr::Hmd_Eye nEye);
-	void UpdateHMDMatrixPose();
+	void UpdateHMDMatrixPose(void);
+	void UpdateHMDPositionalInfo(void);
+	void ProcessVREvent(const vr::VREvent_t & event);
+	
+	float m_fNearClip;
+	float m_fFarClip;
 
+	Matrix4 m_mat4eyeProjection[2];
+	Matrix4 m_mat4eyePos[2];
 	unsigned int m_frame;
 	vr::IVRSystem *m_pHMDy;
 	vr::IVRRenderModels *m_pRenderModels;
@@ -77,6 +91,9 @@ private:
 	Matrix4 m_rMat4TrackedPose[vr::k_unMaxTrackedDeviceCount];
 	Matrix4 m_rmat4DevicePose[ vr::k_unMaxTrackedDeviceCount ];
 	Matrix4 m_mat4HMDPose;
+	Quaternion *m_hmdRotation;
+	Vector3 *m_hmdPosition;
+
 	char m_rDevClassChar[vr::k_unMaxTrackedDeviceCount];   // for each device, a character representing its class
 	vr::TrackedDevicePose_t m_rTrackedDevicePose[vr::k_unMaxTrackedDeviceCount];
 	GLuint m_fbo[2];
@@ -150,6 +167,16 @@ bool OpenVRImpl::initializeOverlay()
 	return false;
 }
 
+void OpenVRImpl::SetupCameras(void)
+{
+	m_mat4eyeProjection[0] = GetHMDMatrixProjectionEye(vr::Eye_Left);
+	m_mat4eyeProjection[1] = GetHMDMatrixProjectionEye(vr::Eye_Right);
+	m_mat4eyePos[0] = GetHMDMatrixPoseEye(vr::Eye_Left);
+	m_mat4eyePos[1] = GetHMDMatrixPoseEye(vr::Eye_Right);
+}
+
+
+
 Matrix4 OpenVRImpl::ConvertSteamVRMatrixToMatrix4(const vr::HmdMatrix34_t &matPose)
 {
 	Matrix4 matrixObj(
@@ -200,8 +227,46 @@ void OpenVRImpl::UpdateHMDMatrixPose()
 	}
 }
 
+void OpenVRImpl::UpdateHMDPositionalInfo() 
+{
+	
+	// The following call modifies m_hmdRotation
+	MatrixHelper::GetRotation(*m_hmdRotation, m_mat4HMDPose);
+
+	// The following call modifies m_hmdPosition
+	MatrixHelper::GetPosition(*m_hmdPosition, m_mat4HMDPose);
+
+}
+
+void OpenVRImpl::ProcessVREvent(const vr::VREvent_t & event)
+{
+	switch (event.eventType)
+	{
+	case vr::VREvent_TrackedDeviceActivated:
+	{
+		this->setStatus("A Device was Activated.\n");
+		this->setStateBool(false);  // To indicate Dirty.
+	}
+	break;
+	case vr::VREvent_TrackedDeviceDeactivated:
+	{
+		this->setStatus("A Device was Deactivated.\n");
+		this->setStateBool(false);  // To indicate Dirty.
+	}
+	break;
+	case vr::VREvent_TrackedDeviceUpdated:
+	{
+		this->setStatus("A Device was Updated.\n");
+		this->setStateBool(false);  // To indicate Dirty.
+	}
+	break;
+	}
+}
+
 OpenVRImpl::OpenVRImpl() 
 	:Backend()
+	, m_fNearClip(0.1f)
+	, m_fFarClip(30.0f)
 {
 	std::cout << "OpenVR()" << std::endl;
 
@@ -219,6 +284,10 @@ OpenVRImpl::OpenVRImpl()
 	this->m_width[1] = 1182;
 	this->m_height[0] = 1464;
 	this->m_height[1] = 1464;
+
+	// Heap Elements 
+	m_hmdRotation = new Quaternion();
+	m_hmdPosition = new Vector3();
 
 	this->m_status = "Inside DLL - Constructor";
 
@@ -256,20 +325,22 @@ OpenVRImpl::OpenVRImpl()
 		std::cout << "OpenVR properly initialized (" << m_width[0] << "x" << m_height[0] << ", " << m_width[1] << "x" << m_height[1] << ")" << std::endl;
 	}
 
+	// Setup the Cameras.
+	SetupCameras();
+
 	
 }
 
 OpenVRImpl::~OpenVRImpl()
 {
+	// Clean up heap
+	delete m_hmdRotation; // HACKHACKNOOBCHECK: @cedeon does not Grok simple memory management. Check this.
+	delete m_hmdPosition;
+
 	std::cout << "~OpenVRImpl" << std::endl;
 	for (int eye = 0; eye < 2; eye++) {
 	}
 
-}
-
-bool OpenVRImpl::isConnected()
-{
-	return false;
 }
 
 bool OpenVRImpl::setup(const unsigned int color_texture_left, const unsigned int color_texture_right)
@@ -302,14 +373,77 @@ bool OpenVRImpl::setup(const unsigned int color_texture_left, const unsigned int
 
 bool OpenVRImpl::update(float *r_orientation_left, float *r_position_left, float *r_orientation_right, float *r_position_right)
 {
-	// seems like this is the only one used.
-	return false;
+	this->UpdateHMDMatrixPose();
+	// m_mat4HMDPose should now be updated.
+
+	// this->UpdateHMDPositionalInfo(); REDUNDANT NOW???
+	// m_hmdRotation should now be updated.
+	// m_hmdPosition should now be updated.
+
+	//Matrix4 mat_hmdproj_left = this->GetHMDMatrixProjectionEye(vr::EVREye::Eye_Left);
+	//Matrix4 mat_hmdproj_right = this->GetHMDMatrixProjectionEye(vr::EVREye::Eye_Right);
+
+	// Requires m_mat4eyeProjection & m_mat4eyePos which are both only setup in OpenVRImpl::SetupCameras(void) once ??
+	Matrix4 mat_left = this->GetCurrentViewProjectionMatrix(vr::EVREye::Eye_Left);
+	Matrix4 mat_right = this->GetCurrentViewProjectionMatrix(vr::EVREye::Eye_Right);
+
+	Quaternion *q_left;
+	Quaternion *q_right;
+
+	Vector3 *v3_left;
+	Vector3 *v3_right;
+
+	MatrixHelper::GetRotation(*q_left, mat_left);
+	MatrixHelper::GetPosition(*v3_left, mat_left);
+
+	MatrixHelper::GetRotation(*q_right, mat_right);
+	MatrixHelper::GetPosition(*v3_right, mat_right);
+
+	Quaternion *orientation_in[2] = { q_left, q_right };
+	Vector3 *position_in[2] = { v3_left, v3_right };
+
+	float *orientation_out[2] = { r_orientation_left, r_orientation_right };
+	float *position_out[2] = { r_position_left, r_position_right };
+
+
+	for (int eye = 0; eye < 2; eye++) {
+		orientation_out[eye][0] = orientation_in[eye]->w;
+		orientation_out[eye][1] = orientation_in[eye]->x;
+		orientation_out[eye][2] = orientation_in[eye]->y;
+		orientation_out[eye][3] = orientation_in[eye]->z;
+
+#ifdef DEBUG
+		std::cout << "w:";
+		std::cout << orientation_out[eye][0];
+		std::cout << std::endl;
+
+		std::cout << "x:";
+		std::cout << orientation_out[eye][1];
+		std::cout << std::endl;
+
+		std::cout << "y:";
+		std::cout << orientation_out[eye][2];
+		std::cout << std::endl;
+
+		std::cout << "z:";
+		std::cout << orientation_out[eye][3];
+		std::cout << std::endl;
+#endif
+
+		position_out[eye][0] = position_in[eye]->x;
+		position_out[eye][1] = position_in[eye]->y;
+		position_out[eye][2] = position_in[eye]->z;
+
+	}
+
+	return true;
 };
 
 bool OpenVRImpl::update(
 	float *r_yaw_left, float *r_pitch_left, float *r_roll_left, float *r_position_left,
 	float *r_yaw_right, float *r_pitch_right, float *r_roll_right, float *r_position_right)
 {
+	// TODO: Complete
 	return false;
 };
 
@@ -317,30 +451,43 @@ bool OpenVRImpl::update(
 	float *r_yaw_left, float *r_pitch_left, float *r_roll_left, float *r_orientation_left, float *r_position_left,
 	float *r_yaw_right, float *r_pitch_right, float *r_roll_right, float *r_orientation_right, float *r_position_right)
 {
+	// TODO: Complete
 	return false;
 }
 
 bool OpenVRImpl::update(float *r_matrix_left, float *r_matrix_right)
 {
-	/*  Gets Tracking Data */
-	vr::TrackedDevicePose_t rTrackedDevicePose[vr::k_unMaxTrackedDeviceCount];
+	this->UpdateHMDMatrixPose();
+	// m_mat4HMDPose should now be updated.
 
-	m_pHMDy->GetDeviceToAbsoluteTrackingPose(vr::TrackingUniverseSeated, 0.0f, 
-		VR_ARRAY_COUNT(vr::k_unMaxTrackedDeviceCount) rTrackedDevicePose, vr::k_unMaxTrackedDeviceCount);
-
-	for (uint32_t i = 0; i < vr::k_unMaxTrackedDeviceCount; i++) 
-	{
-		m_rMat4TrackedPose[i] = this->ConvertSteamVRMatrixToMatrix4(rTrackedDevicePose[i].mDeviceToAbsoluteTracking);
-	}
+	// left
+	Matrix4 mat_left = this->GetHMDMatrixProjectionEye(vr::EVREye::Eye_Left);
+		for (int i = 0; i < 4; i++)
+			for (int j = 0; j < 4; j++)
+				r_matrix_left[i * 4 + j] = mat_left[i * 4 + j];
 	
+	// right
+	Matrix4 mat_right = this->GetHMDMatrixProjectionEye(vr::EVREye::Eye_Right);
+		for (int k = 0; k < 4; k++)
+			for (int l = 0; l < 4; l++)
+				r_matrix_right[k * 4 + l] = mat_right[k * 4 + l];
+
 	return true;
 }
 
 bool OpenVRImpl::frameReady()
 {
 
+	// First check for device changes.. controllers turned off/on etc and set dirty state if changes.
+	vr::VREvent_t event;
+	while (m_pHMDy->PollNextEvent(&event, sizeof(event)))
+	{
+		ProcessVREvent(event);
+	}
+
+
 	// We must call WaitGetPoses before the Compositor gets focus
-	// The following member function includes for this...
+	// The following member function does this...
 	this->UpdateHMDMatrixPose();
 
 	if (!this->m_pCompositor->CanRenderScene()) {
@@ -358,8 +505,10 @@ bool OpenVRImpl::frameReady()
 		vr::Texture_t texture = { (void*)this->m_color_texture[eye], vr::API_OpenGL, vr::ColorSpace_Auto };
 
 		vr::VRTextureBounds_t bounds;
-		bounds.uMin = (eye == 0) ? 0.0f : 0.5f;
-		bounds.uMax = (eye == 0) ? 0.5f : 1.0f;
+		//bounds.uMin = (eye == 0) ? 0.0f : 0.5f;
+		bounds.uMin = (eye == 0) ? 0.0f : 0.0f;
+		//bounds.uMax = (eye == 0) ? 0.5f : 1.0f;
+		bounds.uMax = (eye == 0) ? 1.0f : 1.0f;
 		bounds.vMin = 0.f;
 		bounds.vMax = 1.f;
 
@@ -388,17 +537,36 @@ bool OpenVRImpl::reCenter()
 
 void OpenVRImpl::getProjectionMatrixLeft(const float nearz, const float farz, const bool is_opengl, const bool is_right_hand, float *r_matrix)
 {
+	//TODO: Check side affect.
+	// Side Affect: Updates Class members for near and far clip planes.
+	this->m_fNearClip = nearz;
+	this->m_fFarClip = farz;
 
+	Matrix4 mat = this->GetHMDMatrixProjectionEye(vr::EVREye::Eye_Left, nearz, farz, is_opengl).get();
+
+	for (int i = 0; i < 4; i++)
+		for (int j = 0; j < 4; j++)
+			r_matrix[i * 4 + j] = mat[i * 4 + j];
 }
 
 void OpenVRImpl::getProjectionMatrixRight(const float nearz, const float farz, const bool is_opengl, const bool is_right_hand, float *r_matrix)
 {
+	//TODO: Check side affect.
+	// Side Affect: Updates Class members for near and far clip planes.
+	this->m_fNearClip = nearz;
+	this->m_fFarClip = farz;
 
+	Matrix4 mat = this->GetHMDMatrixProjectionEye(vr::EVREye::Eye_Right, nearz, farz, is_opengl).get();
+
+	for (int i = 0; i < 4; i++)
+		for (int j = 0; j < 4; j++)
+			r_matrix[i * 4 + j] = mat[i * 4 + j];
 }
 
 unsigned int OpenVRImpl::getProjectionMatrixFlags(const bool is_opengl, const bool is_right_hand)
 {
-	return 0;
+	unsigned int flags = 1;  // Hardcoded for now. TODO: Review
+	return flags;
 }
 
 Matrix4 OpenVRImpl::GetCurrentViewProjectionMatrix(vr::Hmd_Eye nEye)
@@ -406,17 +574,52 @@ Matrix4 OpenVRImpl::GetCurrentViewProjectionMatrix(vr::Hmd_Eye nEye)
 	Matrix4 matMVP;
 	if (nEye == vr::Eye_Left)
 	{
-	//	matMVP = m_mat4ProjectionLeft * m_mat4eyePosLeft * m_mat4HMDPose;
+		matMVP = m_mat4eyeProjection[0] * m_mat4eyePos[0] * m_mat4HMDPose;
 	}
 	else if (nEye == vr::Eye_Right)
 	{
-	//	matMVP = m_mat4ProjectionRight * m_mat4eyePosRight *  m_mat4HMDPose;
+		matMVP = m_mat4eyeProjection[1] * m_mat4eyePos[1] *  m_mat4HMDPose;
 	}
 
 	return matMVP;
 }
 
+Matrix4 OpenVRImpl::GetHMDMatrixProjectionEye(vr::Hmd_Eye nEye)
+{
+	return this->GetHMDMatrixProjectionEye(nEye, m_fNearClip, m_fFarClip, vr::API_OpenGL);
+}
 
+Matrix4 OpenVRImpl::GetHMDMatrixProjectionEye(vr::Hmd_Eye nEye, float fNearClip, float fFarClip, bool isOpenGL)
+{
+	if (!m_pHMDy)
+		return Matrix4();
+
+
+	vr::HmdMatrix44_t mat = m_pHMDy->GetProjectionMatrix(nEye, fNearClip, fFarClip, (vr::EGraphicsAPIConvention)isOpenGL);
+
+	return Matrix4(
+		mat.m[0][0], mat.m[1][0], mat.m[2][0], mat.m[3][0],
+		mat.m[0][1], mat.m[1][1], mat.m[2][1], mat.m[3][1],
+		mat.m[0][2], mat.m[1][2], mat.m[2][2], mat.m[3][2],
+		mat.m[0][3], mat.m[1][3], mat.m[2][3], mat.m[3][3]
+		);
+}
+
+Matrix4 OpenVRImpl::GetHMDMatrixPoseEye(vr::Hmd_Eye nEye)
+{
+	if (!m_pHMDy)
+		return Matrix4();
+
+	vr::HmdMatrix34_t matEyeRight = m_pHMDy->GetEyeToHeadTransform(nEye);
+	Matrix4 matrixObj(
+		matEyeRight.m[0][0], matEyeRight.m[1][0], matEyeRight.m[2][0], 0.0,
+		matEyeRight.m[0][1], matEyeRight.m[1][1], matEyeRight.m[2][1], 0.0,
+		matEyeRight.m[0][2], matEyeRight.m[1][2], matEyeRight.m[2][2], 0.0,
+		matEyeRight.m[0][3], matEyeRight.m[1][3], matEyeRight.m[2][3], 1.0f
+		);
+
+	return matrixObj.invert();
+}
 
 
 
