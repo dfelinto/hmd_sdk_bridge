@@ -23,6 +23,10 @@
 #include <iomanip>
 #include "Vectors.h"
 
+
+#pragma warning(disable:4251)
+#pragma warning (push) //save
+
 ///////////////////////////////////////////////////////////////////////////
 // 2x2 matrix
 ///////////////////////////////////////////////////////////////////////////
@@ -906,4 +910,5 @@ inline std::ostream& operator<<(std::ostream& os, const Matrix4& m)
     return os;
 }
 // END OF MATRIX4 INLINE //////////////////////////////////////////////////////
+#pragma warning (pop) //restore
 #endif
