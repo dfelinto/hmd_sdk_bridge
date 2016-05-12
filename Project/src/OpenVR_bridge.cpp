@@ -288,8 +288,9 @@ OpenVRImpl::OpenVRImpl()
 	, m_fNearClip(0.01f)
 	, m_fFarClip(100.0f)
 {
-	std::cout << "OpenVR()" << std::endl;
-
+#ifdef DEBUG 	
+	std::cout << "OpenVR()" << std::endl;  
+#endif
 	/* we need glew to access opengl commands */
 	glewInit();
 
@@ -309,18 +310,17 @@ OpenVRImpl::OpenVRImpl()
 	m_hmdRotation = new Quaternion();
 	m_hmdPosition = new Vector3();
 
-	this->m_status = "Inside DLL - Constructor";
-
 	/* We set to true and then check some things.  Each failed step is to set this to false */
 	this->setStateBool(true);
 
 	/* Make sure the library is loaded */
 	if (this->initializeLibrary() == false) {
 		
-		this->setStatus ( "Error: OpenVR library could not initialize" );
+		this->setStatus ( "Error: OpenVR library could not initialize. Is HMD powered on?" );
 		this->setStateBool(false);
 
 		std::cout << this->getStatus() << std::endl;
+		return;   // Fix: blender crash if we proceed from here.
 	}
 
 	if (this->initializeCompositor() == false) {
@@ -328,22 +328,31 @@ OpenVRImpl::OpenVRImpl()
 		this->setStateBool(false);
 
 		std::cout << this->getStatus() << std::endl;
+		return;
 	}
 
+	// Note for the Future.  We're not using overlays yet so turning off for now.
+	// But this seems to fail the second time around (Turning off virtual mode then on)
+	// Look into that.
+	/*
 	if (this->initializeOverlay() == false)
 	{
 		this->setStatus("Overlay initialization failed.\n");
 		this->setStateBool(false);
+
+		std::cout << this->getStatus() << std::endl;
+		// return; TODO: Is not returning fatal?.. sometimes we have already initialized as this seems persistent between this class's destruction.
 	}
+	*/
 
 
-	this->m_status = "After Init Library, Compositor and Overlay";
-
+	// TODO: There is no case where this could be false and code is still executing here. Refactor.
 	if (this->getStateBool())
 	{
-		this->setStatus("OpenVR properly initialized.\n");
+		this->setStatus("OpenVR properly initialized. Make sure your lighthouses are running or you will get a blank screen. \n");
 		std::cout << "OpenVR properly initialized (" << m_width[0] << "x" << m_height[0] << ", " << m_width[1] << "x" << m_height[1] << ")" << std::endl;
 	}
+
 
 	// Setup the Cameras.
 	SetupCameras();
@@ -351,9 +360,7 @@ OpenVRImpl::OpenVRImpl()
 	/** Sets tracking space returned by WaitGetPoses */
 	this->m_pCompositor->SetTrackingSpace(vr::ETrackingUniverseOrigin::TrackingUniverseStanding);
 
-	
-	
-
+	return;
 	
 }
 
