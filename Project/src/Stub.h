@@ -34,7 +34,7 @@ public:
 		return false;
 	}
 
-	bool update(float *, float *)
+	bool update(const bool, float *, float *)
 	{
 		return false;
 	}

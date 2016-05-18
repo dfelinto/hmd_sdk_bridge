@@ -45,7 +45,7 @@ public:
 		float *r_yaw_left, float *r_pitch_left, float *r_roll_left, float *r_orientation_left, float *r_position_left,
 		float *r_yaw_right, float *r_pitch_right, float *r_roll_right, float *r_orientation_right, float *r_position_right);
 
-	bool update(float *r_matrix_left, float *r_matrix_right);
+	bool update(const bool is_right_hand, float *r_matrix_left, float *r_matrix_right);
 
 	bool frameReady(void);
 
@@ -435,7 +435,7 @@ bool OculusImpl::update(
 	return false;
 }
 
-bool OculusImpl::update(float *r_matrix_left, float *r_matrix_right)
+bool OculusImpl::update(const bool is_right_hand, float *r_matrix_left, float *r_matrix_right)
 {
 	/* Get both eye poses simultaneously, with IPD offset already included */
 	ovrFrameTiming ftiming = ovr_GetFrameTiming(this->m_hmd, ++this->m_frame);
@@ -450,9 +450,18 @@ bool OculusImpl::update(float *r_matrix_left, float *r_matrix_right)
 			Vector3f pos = this->m_layer.RenderPose[eye].Position;
 			Matrix4f rot = Matrix4f(this->m_layer.RenderPose[eye].Orientation);
 
-			Vector3f finalUp = rot.Transform(Vector3f(0, 1, 0));
-			Vector3f finalForward = rot.Transform(Vector3f(0, 0, -1));
-			Matrix4f view = Matrix4f::LookAtRH(pos, pos + finalForward, finalUp);
+			Vector3f finalUp, finalForward;
+			Matrix4f view;
+
+			finalUp = rot.Transform(Vector3f(0.0f, 1.0f, 0.0f));
+			finalForward = rot.Transform(Vector3f(0.0f, 0.0f, -1.0f));
+
+			if (is_right_hand) {
+				view = Matrix4f::LookAtRH(pos, pos + finalForward, finalUp);
+			}
+			else {
+				view = Matrix4f::LookAtLH(pos, pos + finalForward, finalUp);
+			}
 
 			formatMatrix(view, matrix[eye]);
 		}
@@ -576,9 +585,9 @@ bool Oculus::update(
 		r_yaw_right, r_pitch_right, r_roll_right, r_orientation_right, r_position_right);
 }
 
-bool Oculus::update(float *r_matrix_left, float *r_matrix_right)
+bool Oculus::update(const bool is_right_hand, float *r_matrix_left, float *r_matrix_right)
 {
-	return this->m_me->update(r_matrix_left, r_matrix_right);
+	return this->m_me->update(is_right_hand, r_matrix_left, r_matrix_right);
 }
 
 bool Oculus::frameReady()

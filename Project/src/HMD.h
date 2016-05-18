@@ -82,7 +82,7 @@ public:
 			r_yaw_right, r_pitch_right, r_roll_right, r_orientation_right, r_position_right);
 	}
 
-	bool update(float *r_matrix_left, float *r_matrix_right) { return m_hmd->update(r_matrix_left, r_matrix_right); }
+	bool update(const bool is_right_hand, float *r_matrix_left, float *r_matrix_right) { return m_hmd->update(is_right_hand, r_matrix_left, r_matrix_right); }
 
 	bool frameReady(void) { return m_hmd->frameReady(); }
 
