@@ -1,6 +1,8 @@
 #ifndef __BACKEND_H__
 #define __BACKEND_H__
 
+#include <string>
+
 #if defined(_WIN32) || defined(_WIN64)
 
 #if !defined(DllExport)
@@ -14,7 +16,7 @@
 class DllExport Backend
 {
 public:
-	Backend():m_scale(1.0) {}
+	Backend() : m_scale(1.0), m_state_bool(false)  {}
 
 	virtual ~Backend() {}
 
@@ -48,12 +50,18 @@ public:
 	virtual int getHeightRight() { return this->m_height[1]; }
 	virtual float getScale() { return this->m_scale; }
 	virtual void setScale(const float scale) { this->m_scale = scale; }
+	virtual const char* getStatus() { return this->m_status.c_str(); }
+	virtual void setStatus(const char* str) { this->m_status.assign(str); }
+	virtual bool getStateBool() { return this->m_state_bool; }
+	virtual void setStateBool(bool b) { this->m_state_bool = b; }
 
 protected:
 	unsigned int m_color_texture[2];
 	unsigned int m_width[2];
 	unsigned int m_height[2];
 	float m_scale;
+	std::string m_status;   // Holds a string to the last status - for debug/ui
+	bool m_state_bool;      // Holds false if fatal error.
 };
 
 #endif /* __BACKEND_H__ */

@@ -59,9 +59,13 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)build\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)build\intermediate\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)build\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)build\intermediate\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -69,11 +73,13 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;CONSOLEAPPLICATION1_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\src\OculusSDK\LibOVR\Include;C:\src\OculusSDK\LibOVRKernel\Src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Oculus\OculusSDK\LibOVR\Include;C:\Oculus\OculusSDK\LibOVRKernel\Src;C:\src\OculusSDK\LibOVR\Include;C:\src\OculusSDK\LibOVRKernel\Src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>LibOVR.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Oculus\OculusSDK\LibOVR\Lib\Windows\Win32\Release\VS2013;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -85,14 +91,15 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;CONSOLEAPPLICATION1_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile />
-      <AdditionalIncludeDirectories>$(ProjectDir)/glew/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\git\openvr\samples\thirdparty\sdl2-2.0.3\include;D:\git\openvr\headers;C:\Oculus\OculusSDK\LibOVR\Include;C:\Oculus\OculusSDK\LibOVRKernel\Src;D:\git\hmd_sdk_bridge\Project\thirdparty\glew-1.13.0\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>LibOVR.lib;opengl32.lib;glew32.lib;openvr_api.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>D:\git\openvr\lib\win32;C:\Oculus\OculusSDK\LibOVR\Lib\Windows\Win32\Release\VS2013;D:\git\hmd_sdk_bridge\Project\thirdparty\glew-1.13.0\lib\Release\Win32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -105,7 +112,7 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;CONSOLEAPPLICATION1_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(ProjectDir)/glew/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\git\openvr\samples\thirdparty\sdl2-2.0.3\include;D:\git\openvr\samples\thirdparty\glew\glew-1.11.0\include;D:\git\openvr\headers;C:\Oculus\OculusSDK\LibOVR\Include;C:\Oculus\OculusSDK\LibOVRKernel\Src;$(ProjectDir)/glew/include</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -113,8 +120,12 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>LibOVR.lib;opengl32.lib;glew32.lib;glew32s.lib;openvr_api.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>D:\git\hmd_sdk_bridge\Project\thirdparty\glew-1.13.0\lib\Release\x64;D:\git\openvr\lib\win64;C:\Oculus\OculusSDK\LibOVR\Lib\Windows\x64\Release\VS2013;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
+    <PostBuildEvent>
+      <Command>$(SolutionDir)copy_built.bat $(SolutionDir)</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <Text Include="../Readme.md" />
@@ -127,9 +138,14 @@
     <ClInclude Include="src/Debug.h" />
     <ClInclude Include="src/Backend.h" />
     <ClInclude Include="src/Stub.h" />
+    <ClInclude Include="src\OpenVR_bridge.h" />
+    <ClInclude Include="src\shared\lodepng.h" />
+    <ClInclude Include="src\shared\Matrices.h" />
+    <ClInclude Include="src\shared\pathtools.h" />
+    <ClInclude Include="src\shared\MatrixQuaternionMath.h" />
+    <ClInclude Include="src\shared\Vectors.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="glew/src/glew.c" />
     <ClCompile Include="src/main.cpp">
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsManaged>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -142,6 +158,10 @@
       </PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="src/Oculus.cpp" />
+    <ClCompile Include="src\OpenVR_bridge.cpp" />
+    <ClCompile Include="src\shared\lodepng.cpp" />
+    <ClCompile Include="src\shared\Matrices.cpp" />
+    <ClCompile Include="src\shared\pathtools.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

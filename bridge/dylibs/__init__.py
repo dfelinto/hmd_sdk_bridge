@@ -567,6 +567,44 @@ class WindowsLibraryLoader(LibraryLoader):
                 if path:
                     yield path
 
+class Windows64LibraryLoader(LibraryLoader):
+    name_formats = ["%s.dll", "lib%s.dll", "%slib.dll"]
+
+    def load_library(self, libname):
+        try:
+            result = LibraryLoader.load_library(self, libname)
+        except ImportError:
+            result = None
+            if os.path.sep not in libname:
+                for name in self.name_formats:
+                    try:
+                        result = getattr(ctypes.windll, name % libname)
+                        if result:
+                            break
+                    except WindowsError:
+                        result = None
+            if result is None:
+                try:
+                    result = getattr(ctypes.windll, libname)
+                except WindowsError:
+                    result = None
+            if result is None:
+                raise ImportError("%s not found." % libname)
+        return result
+
+    def load(self, path):
+        return _WindowsLibrary(path)
+
+    def getplatformpaths(self, libname):
+        if os.path.sep not in libname:
+            for name in self.name_formats:
+                dll_in_current_dir = os.path.abspath(name % libname)
+                if os.path.exists(dll_in_current_dir):
+                    yield dll_in_current_dir
+                path = ctypes.util.find_library(name % libname)
+                if path:
+                    yield path
+
 # Platform switching
 
 # If your value of sys.platform does not appear in this dict, please contact
@@ -578,7 +616,15 @@ loaderclass = {
     "win32":    WindowsLibraryLoader
 }
 
-loader = loaderclass.get(sys.platform, PosixLibraryLoader)()
+def get_library_loader():
+    loader = loaderclass.get(sys.platform, PosixLibraryLoader)()
+
+    if platform.architecture()[0].startswith('64'):
+        loader = Windows64LibraryLoader()
+
+    return loader
+
+loader = get_library_loader()
 
 def add_library_search_dirs(other_dirs):
     loader.other_dirs = other_dirs
