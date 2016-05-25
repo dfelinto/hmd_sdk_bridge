@@ -7,6 +7,23 @@
 #endif
 
 
+/* C API */
+#if defined(_WIN32) || defined(_WIN64)
+#ifdef __cplusplus
+#define EXPORT_LIB extern "C" __declspec(dllimport)
+#else
+#define EXPORT_LIB __declspec(dllimport)
+#endif
+#else
+#ifdef __cplusplus
+#define EXPORT_LIB extern "C"
+#else
+#define EXPORT_LIB
+#endif
+#endif
+
+#ifdef __cplusplus
+
 /* C++ API */
 #if defined(_WIN32) || defined(_WIN64)
 #if !defined(DllExport)
@@ -17,12 +34,6 @@
 #define DllExport
 #endif
 
-/* C API */
-#if defined(_WIN32) || defined(_WIN64)
-#define EXPORT_LIB extern "C" __declspec(dllimport)
-#else
-#define EXPORT_LIB extern "C"
-#endif
 
 /* Forward declarations */
 class Backend;
@@ -82,6 +93,10 @@ protected:
 	Backend *m_hmd;
 };
 
+#endif /* __cplusplus */
+
+
+/* C API */
 
 /* Debug wrapper */
 #ifdef DEBUG_BRIDGE
