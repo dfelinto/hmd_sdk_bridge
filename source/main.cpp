@@ -1,5 +1,4 @@
 #define DLL_EXPORT
 #define OCULUS
 
-
-#include "../Include/Bridge_C_API.h"
+#include "HMD_Bridge_API.h"
