@@ -4,6 +4,8 @@
 #include "Oculus.h"
 #include "Stub.h"
 
+/* C++ API */
+
 /* legacy overload constructor */
 HMD::HMD():
 	m_hmd(nullptr)
@@ -117,4 +119,79 @@ float HMD::getScale() {
 
 void HMD::setScale(const float scale) {
 	m_hmd->setScale(scale);
+}
+
+
+
+
+/* C API */
+
+HMD *HMD_new(HMD::eHMDBackend backend)
+{
+	return new HMD(backend);
+}
+
+void HMD_del(HMD *hmd)
+{
+	if (hmd) delete hmd;
+}
+
+bool HMD_setup(HMD *hmd, const unsigned int color_texture_left, const unsigned int color_texture_right)
+{
+	return hmd->setup(color_texture_left, color_texture_right);
+}
+
+bool HMD_update(HMD *hmd, float *r_orientation_left, float *r_position_left, float *r_orientation_right, float *r_position_right)
+{
+	return hmd->update(r_orientation_left, r_position_left, r_orientation_right, r_position_right);
+};
+
+bool HMD_frameReady(HMD *hmd)
+{
+	return hmd->frameReady();
+}
+
+bool HMD_reCenter(HMD *hmd)
+{
+	return hmd->reCenter();
+}
+
+unsigned int HMD_widthLeft(HMD *hmd)
+{
+	return hmd->getWidthLeft();
+}
+
+unsigned int HMD_heightLeft(HMD *hmd)
+{
+	return hmd->getHeightLeft();
+}
+
+unsigned int HMD_widthRight(HMD *hmd)
+{
+	return hmd->getWidthRight();
+}
+
+unsigned int HMD_heightRight(HMD *hmd)
+{
+	return hmd->getHeightRight();
+}
+
+void HMD_projectionMatrixLeft(HMD *hmd, const float nearz, const float farz, float *r_matrix)
+{
+	hmd->getProjectionMatrixLeft(nearz, farz, true, true, r_matrix);
+}
+
+void HMD_projectionMatrixRight(HMD *hmd, const float nearz, const float farz, float *r_matrix)
+{
+	hmd->getProjectionMatrixRight(nearz, farz, true, true, r_matrix);
+}
+
+float HMD_scaleGet(HMD *hmd)
+{
+	return hmd->getScale();
+}
+
+void HMD_scaleSet(HMD *hmd, const float scale)
+{
+	hmd->setScale(scale);
 }
