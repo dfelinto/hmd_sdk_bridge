@@ -1,6 +1,11 @@
 #ifndef __HMD_BRIDGE_API_H__
 #define __HMD_BRIDGE_API_H__
 
+/* waiting for CMake */
+#ifndef OCULUS
+#define OCULUS
+#endif
+
 
 /* C++ API */
 #if defined(_WIN32) || defined(_WIN64)
@@ -14,11 +19,7 @@
 
 /* C API */
 #if defined(_WIN32) || defined(_WIN64)
-#if defined DLL_EXPORT
-#define EXPORT_LIB extern "C" __declspec(dllexport)
-#else
 #define EXPORT_LIB extern "C" __declspec(dllimport)
-#endif
 #else
 #define EXPORT_LIB extern "C"
 #endif
@@ -111,20 +112,20 @@ EXPORT_LIB void HMD_scaleSet(HMD *hmd, const float scale);
 
 #ifdef OCULUS
 /* Oculus wrapper - kept for backward compatibility */
-EXPORT_LIB HMD *Oculus_new(){ return new HMD(HMD::eHMDBackend::BACKEND_OCULUS); }
-EXPORT_LIB void Oculus_del(HMD *hmd){ if (hmd) delete hmd; }
-EXPORT_LIB bool Oculus_setup(HMD *hmd, const unsigned int color_texture_left, const unsigned int color_texture_right){ return hmd->setup(color_texture_left, color_texture_right); }
-EXPORT_LIB bool Oculus_update(HMD *hmd, float *r_orientation_left, float *r_position_left, float *r_orientation_right, float *r_position_right){ return hmd->update(r_orientation_left, r_position_left, r_orientation_right, r_position_right); };
-EXPORT_LIB bool Oculus_frameReady(HMD *hmd) { return hmd->frameReady(); }
-EXPORT_LIB bool Oculus_reCenter(HMD *hmd) { return hmd->reCenter(); }
-EXPORT_LIB unsigned int Oculus_widthLeft(HMD *hmd) { return hmd->getWidthLeft(); }
-EXPORT_LIB unsigned int Oculus_heightLeft(HMD *hmd) { return hmd->getHeightLeft(); }
-EXPORT_LIB unsigned int Oculus_widthRight(HMD *hmd) { return hmd->getWidthRight(); }
-EXPORT_LIB unsigned int Oculus_heightRight(HMD *hmd) { return hmd->getHeightRight(); }
-EXPORT_LIB void Oculus_projectionMatrixLeft(HMD *hmd, const float nearz, const float farz, float *r_matrix) { hmd->getProjectionMatrixLeft(nearz, farz, true, true, r_matrix); }
-EXPORT_LIB void Oculus_projectionMatrixRight(HMD *hmd, const float nearz, const float farz, float *r_matrix) { hmd->getProjectionMatrixRight(nearz, farz, true, true, r_matrix); }
-EXPORT_LIB float Oculus_scaleGet(HMD *hmd) { return hmd->getScale(); }
-EXPORT_LIB void Oculus_scaleSet(HMD *hmd, const float scale) { hmd->setScale(scale); }
+EXPORT_LIB HMD *Oculus_new();
+EXPORT_LIB void Oculus_del(HMD *hmd);
+EXPORT_LIB bool Oculus_setup(HMD *hmd, const unsigned int color_texture_left, const unsigned int color_texture_right);
+EXPORT_LIB bool Oculus_update(HMD *hmd, float *r_orientation_left, float *r_position_left, float *r_orientation_right, float *r_position_right);
+EXPORT_LIB bool Oculus_frameReady(HMD *hmd);
+EXPORT_LIB bool Oculus_reCenter(HMD *hmd);
+EXPORT_LIB unsigned int Oculus_widthLeft(HMD *hmd);
+EXPORT_LIB unsigned int Oculus_heightLeft(HMD *hmd);
+EXPORT_LIB unsigned int Oculus_widthRight(HMD *hmd);
+EXPORT_LIB unsigned int Oculus_heightRight(HMD *hmd);
+EXPORT_LIB void Oculus_projectionMatrixLeft(HMD *hmd, const float nearz, const float farz, float *r_matrix);
+EXPORT_LIB void Oculus_projectionMatrixRight(HMD *hmd, const float nearz, const float farz, float *r_matrix);
+EXPORT_LIB float Oculus_scaleGet(HMD *hmd);
+EXPORT_LIB void Oculus_scaleSet(HMD *hmd, const float scale);
 #endif
 
 #undef EXPORT_LIB

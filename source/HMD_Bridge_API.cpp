@@ -121,9 +121,6 @@ void HMD::setScale(const float scale) {
 	m_hmd->setScale(scale);
 }
 
-
-
-
 /* C API */
 
 HMD *HMD_new(HMD::eHMDBackend backend)
@@ -192,6 +189,81 @@ float HMD_scaleGet(HMD *hmd)
 }
 
 void HMD_scaleSet(HMD *hmd, const float scale)
+{
+	hmd->setScale(scale);
+}
+
+/* Legacy C API */
+
+#include <iostream>
+/* Oculus wrapper - kept for backward compatibility */
+HMD *Oculus_new()
+{
+	std::cout << "HMD SDK Bridge Legacy API is deprecated, please contact your software developer." << std::endl;
+	return new HMD(HMD::eHMDBackend::BACKEND_OCULUS);
+}
+
+void Oculus_del(HMD *hmd)
+{
+	if (hmd) delete hmd;
+}
+
+bool Oculus_setup(HMD *hmd, const unsigned int color_texture_left, const unsigned int color_texture_right)
+{
+	return hmd->setup(color_texture_left, color_texture_right);
+}
+
+bool Oculus_update(HMD *hmd, float *r_orientation_left, float *r_position_left, float *r_orientation_right, float *r_position_right)
+{
+	return hmd->update(r_orientation_left, r_position_left, r_orientation_right, r_position_right);
+}
+
+bool Oculus_frameReady(HMD *hmd)
+{
+	return hmd->frameReady();
+}
+
+bool Oculus_reCenter(HMD *hmd)
+{
+	return hmd->reCenter();
+}
+
+unsigned int Oculus_widthLeft(HMD *hmd)
+{
+	return hmd->getWidthLeft();
+}
+
+unsigned int Oculus_heightLeft(HMD *hmd)
+{
+	return hmd->getHeightLeft();
+}
+
+unsigned int Oculus_widthRight(HMD *hmd)
+{
+	return hmd->getWidthRight();
+}
+
+unsigned int Oculus_heightRight(HMD *hmd)
+{
+	return hmd->getHeightRight();
+}
+
+void Oculus_projectionMatrixLeft(HMD *hmd, const float nearz, const float farz, float *r_matrix)
+{
+	hmd->getProjectionMatrixLeft(nearz, farz, true, true, r_matrix);
+}
+
+void Oculus_projectionMatrixRight(HMD *hmd, const float nearz, const float farz, float *r_matrix)
+{
+	hmd->getProjectionMatrixRight(nearz, farz, true, true, r_matrix);
+}
+
+float Oculus_scaleGet(HMD *hmd)
+{
+	return hmd->getScale();
+}
+
+void Oculus_scaleSet(HMD *hmd, const float scale)
 {
 	hmd->setScale(scale);
 }
