@@ -1,8 +1,9 @@
 cmake_minimum_required (VERSION 2.8)
-project (HMD_Bridge)
+project (BridgeLib)
 
 # Allow the developer to select if Dynamic or Static libraries are built
-option (BUILD_SHARED_LIBS "Build Shared Libraries" OFF)
+option (BUILD_SHARED_LIBS "Build Shared Libraries" ON)
+
 # Set the LIB_TYPE variable to STATIC
 set (LIB_TYPE STATIC)
 if (BUILD_SHARED_LIBS)
@@ -17,13 +18,6 @@ set (HMD_Bridge_VERSION_MINOR 1)
 
 # source files
 set (PROJECT_SOURCE_DIR source)
-
-# configure a header file to pass some of the CMake settings
-# to the source code
-#configure_file (
-#  "${PROJECT_SOURCE_DIR}/HMD_Bridge_Config.h.in"
-#  "${PROJECT_BINARY_DIR}/HMD_Bridge_Config.h"
-#  )
 
 # add the binary tree to the search path for include files
 # so that we will find HMD_Bridge_Config.h
@@ -47,32 +41,47 @@ set (OCULUS_SDK_DIR "" CACHE PATH "Oculus SDK 0.7 LibOVR Folder")
 include_directories (${OCULUS_SDK_DIR}/Include)
 
 if (WIN32)
+    if (CMAKE_CL_64)
+        set(PLATFORM "x64")
+    else ()
+        set(PLATFORM "Win32")
+    endif()
+
     string(TOLOWER "${CMAKE_BUILD_TYPE}" _type)
     if (_type STREQUAL debug)
-        set (OCULUS_SDK_LIBRARY_PATH ${OCULUS_SDK_DIR}/Lib/Windows/Win32/Debug/VS2013)
-    else()
-        set (OCULUS_SDK_LIBRARY_PATH ${OCULUS_SDK_DIR}/Lib/Windows/Win32/Release/VS2013)
+        set (BUILD_TYPE "Debug")
+    else ()
+        set (BUILD_TYPE "Release")
     endif()
+
+    if (MSVC_VERSION EQUAL 1900)
+        set (MSVC_PATH "VS2015")
+    else()
+        set (MSVC_PATH "VS2013")
+    endif()
+
+    # Oculus
+    set (OCULUS_SDK_LIBRARY_PATH ${OCULUS_SDK_DIR}/Lib/Windows/${PLATFORM}/${BUILD_TYPE}/${MSVC_PATH})
 endif ()
-set(OCULUS_SDK_LIBRARY ${OCULUS_SDK_LIBRARY_PATH}/LibOVR)
+set(OCULUS_SDK_LIBRARY ${OCULUS_SDK_LIBRARY_PATH}/LibOVR.lib)
 
 option (OCULUS_BACKEND "Oculus Backend" ON)
 # Set the OCULUS_BACKEND
 if (${OCULUS_BACKEND})
     add_definitions (-DOCULUS)
-    set (BRIDGE_SOURCE
-        ${BRIDGE_SOURCE}
+    set (BRIDGE_SOURCES
+        ${BRIDGE_SOURCES}
         ${PROJECT_SOURCE_DIR}/Oculus.cpp
         ${PROJECT_SOURCE_DIR}/Oculus.h
     )
 endif (${OCULUS_BACKEND})
 
-add_library (BridgeLib ${LIB_TYPE} ${BRIDGE_SOURCES} ${GLEW_SOURCES})
+add_library (${CMAKE_PROJECT_NAME} ${LIB_TYPE} ${BRIDGE_SOURCES} ${GLEW_SOURCES})
 
 if (WIN32)
-    target_link_libraries (BridgeLib opengl32)
+    target_link_libraries (${CMAKE_PROJECT_NAME} opengl32)
 endif(WIN32)
 
 if (${OCULUS_BACKEND})
-    target_link_libraries (BridgeLib ${OCULUS_SDK_LIBRARY})
+    target_link_libraries (${CMAKE_PROJECT_NAME} ${OCULUS_SDK_LIBRARY})
 endif (${OCULUS_BACKEND})

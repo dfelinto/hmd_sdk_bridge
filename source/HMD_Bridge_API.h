@@ -110,7 +110,6 @@ EXPORT_LIB void Debug_draw(const unsigned int color_texture) { Debug::draw(color
 #endif
 
 EXPORT_LIB HMD *HMD_new(HMD::eHMDBackend backend);
-EXPORT_LIB HMD *HMD_new(HMD::eHMDBackend backend);
 EXPORT_LIB void HMD_del(HMD *hmd);
 EXPORT_LIB bool HMD_setup(HMD *hmd, const unsigned int color_texture_left, const unsigned int color_texture_right);
 EXPORT_LIB bool HMD_update(HMD *hmd, float *r_orientation_left, float *r_position_left, float *r_orientation_right, float *r_position_right);
