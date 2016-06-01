@@ -1,11 +1,6 @@
 #ifndef __HMD_BRIDGE_API_H__
 #define __HMD_BRIDGE_API_H__
 
-/* waiting for CMake */
-#ifndef OCULUS
-#define OCULUS
-#endif
-
 
 /* C API */
 #if defined(_WIN32) || defined(_WIN64)

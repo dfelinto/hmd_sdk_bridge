@@ -1,7 +1,11 @@
 #include "HMD_Bridge_API.h"
 
 #include "Backend.h"
+
+#if defined OCULUS
 #include "Oculus.h"
+#endif
+
 #include "Stub.h"
 
 /* C++ API */
@@ -10,7 +14,7 @@
 HMD::HMD():
 	m_hmd(nullptr)
 {
-#if defined(_WIN32) || defined(_WIN64)
+#if defined OCULUS
 	m_hmd = new Oculus();
 #else
 	m_hmd = new Stub();
@@ -22,7 +26,7 @@ HMD::HMD(eHMDBackend backend):
 {
 	switch (backend) {
 		case BACKEND_OCULUS:
-#if defined(_WIN32) || defined(_WIN64)
+#if defined OCULUS
 			m_hmd = new Oculus();
 			break;
 #endif
