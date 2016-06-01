@@ -12,6 +12,8 @@ from . import HMD as baseHMD
 
 import bridge_wrapper as bridge
 
+import ctypes
+
 from ctypes import (
         c_float,
         )
@@ -19,6 +21,7 @@ from ctypes import (
 class HMD(baseHMD):
     def __init__(self):
         super(HMD, self).__init__()
+        self.init_ctypes()
         self._device = bridge.Oculus_new()
 
     def __del__(self):
@@ -107,3 +110,11 @@ class HMD(baseHMD):
         :rtype: bool
         """
         return bridge.Oculus_reCenter(self._device)
+
+    @staticmethod
+    def init_ctypes():
+        """
+        for the 64 bit platform the return types need to be
+        explicitly defines
+        """
+        bridge.Oculus_new.restype = ctypes.POINTER(ctypes.c_long)
