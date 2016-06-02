@@ -7,7 +7,6 @@
 #include "OVR_CAPI_GL.h"
 
 #include "Extras/OVR_Math.h"
-#include "Kernel/OVR_Log.h"
 
 #include <iostream>
 
@@ -87,13 +86,7 @@ struct TextureBuffer
 		fboId(0),
 		texSize(0, 0)
 	{
-		OVR_ASSERT(sampleCount <= 1); // The code doesn't currently handle MSAA textures.
-
 		texSize = size;
-
-		// This texture isn't necessarily going to be a rendertarget, but it usually is.
-		OVR_ASSERT(hmd); // No HMD? A little odd.
-		OVR_ASSERT(sampleCount == 1); // ovr_CreateSwapTextureSetD3D11 doesn't support MSAA.
 
 		ovrResult result = ovr_CreateSwapTextureSetGL(hmd, GL_SRGB8_ALPHA8, size.w, size.h, &TextureSet);
 

@@ -10,33 +10,28 @@ from .dylibs import load_library
 
 def load(name, win_lib=None, linux_lib=None, osx_lib=None):
 
-    suffix = "-x86"
-    prefix = "win32"
-    file = win_lib
-
     if 64 == 8 * struct.calcsize("P"):
-        suffix = "-x86-64"
+        path = "x64"
+    else:
+        path = "x86"
 
     if "linux" in sys.platform:
         if not linux_lib:
             return
-
-        file = linux_lib
-        prefix = "linux"
+        _file = linux_lib
 
     elif "darwin" in sys.platform:
         if not osx_lib:
             return
-
-        file = osx_lib
-        prefix = "darwin"
+        _file = osx_lib
 
     else:
         if not win_lib:
             return
+        _file = win_lib
 
-    libfile = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'dylibs', prefix + suffix, file)
-    print("Using DLL", libfile)
+    libfile = os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir, "lib", path, _file)
+    print("Using Library: {0}".format(libfile))
 
     if os.path.isfile(libfile):
         lib = load_library(libfile)
