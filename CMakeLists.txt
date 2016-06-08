@@ -66,7 +66,12 @@ if (WIN32)
 endif ()
 set(OCULUS_SDK_LIBRARY ${OCULUS_SDK_LIBRARY_PATH}/LibOVR.lib)
 
-option (OCULUS_BACKEND "Oculus Backend" ON)
+if (WIN32)
+    option (OCULUS_BACKEND "Oculus Backend" ON)
+else ()
+    option (OCULUS_BACKEND "Oculus Backend" OFF)
+endif(WIN32)
+
 # Set the OCULUS_BACKEND
 if (${OCULUS_BACKEND})
     add_definitions (-DOCULUS)
