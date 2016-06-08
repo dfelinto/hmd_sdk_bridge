@@ -92,3 +92,22 @@ endif(WIN32)
 if (${OCULUS_BACKEND})
     target_link_libraries (${CMAKE_PROJECT_NAME} ${OCULUS_SDK_LIBRARY})
 endif (${OCULUS_BACKEND})
+
+
+# Installing
+if (CMAKE_CL_64)
+    set (ARCH "x64")
+else()
+    set (ARCH "x86")
+endif (CMAKE_CL_64)
+
+# Hack, we can't set a default CMAKE_INSTALL_PREFIX so we simply
+# override the original value (and hide the option under the advanced tab)
+
+set (CMAKE_INSTALL_PREFIX ${CMAKE_SOURCE_DIR}/build)
+mark_as_advanced(CMAKE_INSTALL_PREFIX)
+message("-- Library destination: " ${CMAKE_INSTALL_PREFIX})
+
+install (TARGETS ${CMAKE_PROJECT_NAME} DESTINATION lib/${ARCH})
+install (FILES source/HMD_Bridge_API.h DESTINATION include)
+install (DIRECTORY python/ DESTINATION .)
