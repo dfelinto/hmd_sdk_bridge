@@ -1,5 +1,6 @@
-cmake_minimum_required (VERSION 2.8)
+cmake_minimum_required (VERSION 3.1)
 project (BridgeLib)
+
 
 # Allow the developer to select if Dynamic or Static libraries are built
 option (BUILD_SHARED_LIBS "Build Shared Libraries" ON)
@@ -77,6 +78,7 @@ if (${OCULUS_BACKEND})
 endif (${OCULUS_BACKEND})
 
 add_library (${CMAKE_PROJECT_NAME} ${LIB_TYPE} ${BRIDGE_SOURCES} ${GLEW_SOURCES})
+set_property(TARGET ${CMAKE_PROJECT_NAME} PROPERTY CXX_STANDARD 11)
 
 if (WIN32)
     target_link_libraries (${CMAKE_PROJECT_NAME} opengl32)
