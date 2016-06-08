@@ -10,6 +10,8 @@ set (LIB_TYPE STATIC)
 if (BUILD_SHARED_LIBS)
   # User wants to build Dynamic Libraries, so change the LIB_TYPE variable to CMake keyword 'SHARED'
   set (LIB_TYPE SHARED)
+else()
+    add_definitions(-DGLEW_STATIC)
 endif (BUILD_SHARED_LIBS)
 
 
