@@ -72,8 +72,6 @@ How to Build
 3. Build (make)
 4. Install (make install)
 
-Repeat with BUILD_SHARED_LIBS off, and build for different platforms (x86, x64). 
-
 Install
 -------
 The installation routine populates the //build folder with the API,
