@@ -1,8 +1,6 @@
 #ifndef __OCULUS_H__
 #define __OCULUS_H__
 
-#pragma comment(lib, "LibOVR_0070")
-
 #include "Backend.h"
 
 #if defined(_WIN32) || defined(_WIN64)
