@@ -78,6 +78,7 @@ struct TextureBuffer
 	ovrHmd              hmd;
 	ovrSwapTextureSet*  TextureSet;
 	GLuint              fboId;
+	GLint               fboIdActiveDraw;
 	Sizei               texSize;
 
 	TextureBuffer(ovrHmd hmd, Sizei size, int sampleCount) :
@@ -130,6 +131,8 @@ struct TextureBuffer
 		/* push attributes */
 		glPushAttrib(GL_VIEWPORT_BIT | GL_SCISSOR_BIT);
 
+		glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &fboIdActiveDraw);
+
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fboId);
 		glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex->OGL.TexId, 0);
 
@@ -144,7 +147,7 @@ struct TextureBuffer
 
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fboId);
 		glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, 0, 0);
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fboIdActiveDraw);
 	}
 };
 
@@ -275,6 +278,9 @@ bool OculusImpl::isConnected()
 
 bool OculusImpl::setup(const unsigned int color_texture_left, const unsigned int color_texture_right)
 {
+	GLint readFboId = 0;
+	glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING, &readFboId);
+
 	// Make eye render buffers
 	for (int eye = 0; eye < 2; eye++) {
 		ovrSizei idealTextureSize;
@@ -313,13 +319,15 @@ bool OculusImpl::setup(const unsigned int color_texture_left, const unsigned int
 		glGenFramebuffers(1, &this->m_fbo[eye]);
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, this->m_fbo[eye]);
 		glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_color_texture[eye], 0);
-		glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
 	}
 
 	// Turn off vsync to let the compositor do its magic
 	wglSwapIntervalEXT(0);
 
 	std::cout << "Oculus properly setup." << std::endl;
+
+	// restore active FBO
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, readFboId);
 	return true;
 };
 
@@ -465,6 +473,9 @@ bool OculusImpl::update(const bool is_right_hand, float *r_matrix_left, float *r
 
 bool OculusImpl::frameReady()
 {
+	GLint readFboId = 0;
+	glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING, &readFboId);
+
 	for (int eye = 0; eye < 2; eye++) {
 		// Increment to use next texture, just before writing
 		this->m_eyeRenderTexture[eye]->TextureSet->CurrentIndex = (this->m_eyeRenderTexture[eye]->TextureSet->CurrentIndex + 1) % this->m_eyeRenderTexture[eye]->TextureSet->TextureCount;
@@ -480,18 +491,16 @@ bool OculusImpl::frameReady()
 		glBlitFramebuffer(0, 0, w, h,
 		                  0, 0, w, h,
 		                  GL_COLOR_BUFFER_BIT, GL_NEAREST);
-		glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
-
 		this->m_eyeRenderTexture[eye]->UnsetRenderSurface();
 	}
 
 	ovrLayerHeader *layers = &this->m_layer.Header;
 	ovrResult result = ovr_SubmitFrame(this->m_hmd, this->m_frame, nullptr, &layers, 1);
 
-	if (ovrSuccess != result)
-		return false;
+	// restore active FBO
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, readFboId);
 
-	return true;
+	return (ovrSuccess == result);
 };
 
 bool OculusImpl::reCenter()
