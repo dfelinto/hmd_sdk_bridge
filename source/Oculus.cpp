@@ -3,7 +3,7 @@
 #include "GL/glew.h"
 #include "GL/wglew.h"
 
-#include "OVR_CAPI_0_7_0.h"
+#include "OVR_CAPI_0_8_0.h"
 #include "OVR_CAPI_GL.h"
 
 #include "Extras/OVR_Math.h"
@@ -341,8 +341,8 @@ static void formatMatrix(ovrMatrix4f matrix, float *r_matrix)
 bool OculusImpl::update(float *r_orientation_left, float *r_position_left, float *r_orientation_right, float *r_position_right)
 {
 	/* Get both eye poses simultaneously, with IPD offset already included */
-	ovrFrameTiming ftiming = ovr_GetFrameTiming(this->m_hmd, ++this->m_frame);
-	ovrTrackingState hmdState = ovr_GetTrackingState(this->m_hmd, ftiming.DisplayMidpointSeconds);
+	double ftiming = ovr_GetPredictedDisplayTime(this->m_hmd, ++this->m_frame);
+	ovrTrackingState hmdState = ovr_GetTrackingState(this->m_hmd, ftiming, ovrTrue);
 
 	if ((hmdState.StatusFlags & (ovrStatus_OrientationTracked | ovrStatus_PositionTracked)) != 0) {
 		ovr_CalcEyePoses(hmdState.HeadPose.ThePose, this->m_hmdToEyeViewOffset, this->m_layer.RenderPose);
@@ -371,8 +371,8 @@ bool OculusImpl::update(
 	float *r_yaw_right, float *r_pitch_right, float *r_roll_right, float *r_position_right)
 {
 	/* Get both eye poses simultaneously, with IPD offset already included */
-	ovrFrameTiming ftiming = ovr_GetFrameTiming(this->m_hmd, ++this->m_frame);
-	ovrTrackingState hmdState = ovr_GetTrackingState(this->m_hmd, ftiming.DisplayMidpointSeconds);
+	double ftiming = ovr_GetPredictedDisplayTime(this->m_hmd, ++this->m_frame);
+	ovrTrackingState hmdState = ovr_GetTrackingState(this->m_hmd, ftiming, ovrTrue);
 
 	if ((hmdState.StatusFlags & (ovrStatus_OrientationTracked | ovrStatus_PositionTracked)) != 0) {
 		ovr_CalcEyePoses(hmdState.HeadPose.ThePose, this->m_hmdToEyeViewOffset, this->m_layer.RenderPose);
@@ -402,8 +402,8 @@ bool OculusImpl::update(
 	float *r_yaw_right, float *r_pitch_right, float *r_roll_right, float *r_orientation_right, float *r_position_right)
 {
 	/* Get both eye poses simultaneously, with IPD offset already included */
-	ovrFrameTiming ftiming = ovr_GetFrameTiming(this->m_hmd, ++this->m_frame);
-	ovrTrackingState hmdState = ovr_GetTrackingState(this->m_hmd, ftiming.DisplayMidpointSeconds);
+	double ftiming = ovr_GetPredictedDisplayTime(this->m_hmd, ++this->m_frame);
+	ovrTrackingState hmdState = ovr_GetTrackingState(this->m_hmd, ftiming, ovrTrue);
 
 	if ((hmdState.StatusFlags & (ovrStatus_OrientationTracked | ovrStatus_PositionTracked)) != 0) {
 		ovr_CalcEyePoses(hmdState.HeadPose.ThePose, this->m_hmdToEyeViewOffset, this->m_layer.RenderPose);
@@ -439,8 +439,8 @@ bool OculusImpl::update(
 bool OculusImpl::update(const bool is_right_hand, float *r_matrix_left, float *r_matrix_right)
 {
 	/* Get both eye poses simultaneously, with IPD offset already included */
-	ovrFrameTiming ftiming = ovr_GetFrameTiming(this->m_hmd, ++this->m_frame);
-	ovrTrackingState hmdState = ovr_GetTrackingState(this->m_hmd, ftiming.DisplayMidpointSeconds);
+	double ftiming = ovr_GetPredictedDisplayTime(this->m_hmd, ++this->m_frame);
+	ovrTrackingState hmdState = ovr_GetTrackingState(this->m_hmd, ftiming, ovrTrue);
 
 	if ((hmdState.StatusFlags & (ovrStatus_OrientationTracked | ovrStatus_PositionTracked)) != 0) {
 		ovr_CalcEyePoses(hmdState.HeadPose.ThePose, this->m_hmdToEyeViewOffset, this->m_layer.RenderPose);
