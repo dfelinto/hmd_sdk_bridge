@@ -3,12 +3,13 @@
 #include "GL/glew.h"
 #include "GL/wglew.h"
 
-#include "OVR_CAPI_0_8_0.h"
 #include "OVR_CAPI_GL.h"
+#include "OVR_CAPI.h"
 
 #include "Extras/OVR_Math.h"
 
 #include <iostream>
+#include <assert.h>
 
 using namespace OVR;
 
@@ -16,6 +17,7 @@ using namespace OVR;
 #define MAX(a,b) a > b ? a : b;
 
 struct TextureBuffer;
+struct DepthBuffer;
 
 typedef enum eLibStatus
 {
@@ -60,60 +62,165 @@ private:
 	static bool initializeLibrary(void);
 
 	unsigned int m_frame;
-	ovrHmd m_hmd;
+	ovrSession m_hmd;
 	ovrLayerEyeFov m_layer;
 
 	ovrEyeRenderDesc m_eyeRenderDesc[2];
 	ovrVector3f m_hmdToEyeViewOffset[2];
 	TextureBuffer *m_eyeRenderTexture[2];
+	DepthBuffer *m_eyeDepthBuffer[2];
 	static eLibStatus m_lib_status;
 	GLuint m_fbo[2];
 };
 
 eLibStatus OculusImpl::m_lib_status = LIB_UNLOADED;
 
-/* TextureBuffer copied/adapted from Oculus SDK samples */
+/* TextureBuffer copied/adapted from Oculus SDK samples (Win32_GLAppUtil.h)  */
+struct DepthBuffer
+{
+	GLuint        texId;
+
+	DepthBuffer(Sizei size, int sampleCount)
+	{
+		assert(sampleCount <= 1); // The code doesn't currently handle MSAA textures.
+
+		glGenTextures(1, &texId);
+		glBindTexture(GL_TEXTURE_2D, texId);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+		GLenum internalFormat = GL_DEPTH_COMPONENT24;
+		GLenum type = GL_UNSIGNED_INT;
+		if (GL_ARB_depth_buffer_float)
+		{
+			internalFormat = GL_DEPTH_COMPONENT32F;
+			type = GL_FLOAT;
+		}
+
+		glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, size.w, size.h, 0, GL_DEPTH_COMPONENT, type, NULL);
+	}
+	~DepthBuffer()
+	{
+		if (texId)
+		{
+			glDeleteTextures(1, &texId);
+			texId = 0;
+		}
+	}
+};
+
 struct TextureBuffer
 {
-	ovrHmd              hmd;
-	ovrSwapTextureSet*  TextureSet;
+	ovrSession          Session;
+	ovrTextureSwapChain  TextureChain;
+	GLuint              texId;
 	GLuint              fboId;
-	GLint               fboIdActiveDraw;
 	Sizei               texSize;
 
-	TextureBuffer(ovrHmd hmd, Sizei size, int sampleCount) :
-		hmd(hmd),
-		TextureSet(nullptr),
+	TextureBuffer(ovrSession session, bool rendertarget, bool displayableOnHmd, Sizei size, int mipLevels, unsigned char * data, int sampleCount) :
+		Session(session),
+		TextureChain(nullptr),
+		texId(0),
 		fboId(0),
 		texSize(0, 0)
 	{
+		assert(sampleCount <= 1); // The code doesn't currently handle MSAA textures.
+
 		texSize = size;
 
-		ovrResult result = ovr_CreateSwapTextureSetGL(hmd, GL_SRGB8_ALPHA8, size.w, size.h, &TextureSet);
+		if (displayableOnHmd)
+		{
+			// This texture isn't necessarily going to be a rendertarget, but it usually is.
+			assert(session); // No HMD? A little odd.
+			assert(sampleCount == 1); // ovr_CreateSwapTextureSetD3D11 doesn't support MSAA.
 
-		if (OVR_SUCCESS(result)) {
-			for (int i = 0; i < TextureSet->TextureCount; ++i) {
-				ovrGLTexture* tex = (ovrGLTexture*)&TextureSet->Textures[i];
-				glBindTexture(GL_TEXTURE_2D, tex->OGL.TexId);
+			ovrTextureSwapChainDesc desc = {};
+			desc.Type = ovrTexture_2D;
+			desc.ArraySize = 1;
+			desc.Width = size.w;
+			desc.Height = size.h;
+			desc.MipLevels = 1;
+			desc.Format = OVR_FORMAT_R8G8B8A8_UNORM_SRGB;
+			desc.SampleCount = 1;
+			desc.StaticImage = ovrFalse;
 
+			ovrResult result = ovr_CreateTextureSwapChainGL(Session, &desc, &TextureChain);
+
+			int length = 0;
+			ovr_GetTextureSwapChainLength(session, TextureChain, &length);
+
+			if (OVR_SUCCESS(result))
+			{
+				for (int i = 0; i < length; ++i)
+				{
+					GLuint chainTexId;
+					ovr_GetTextureSwapChainBufferGL(Session, TextureChain, i, &chainTexId);
+					glBindTexture(GL_TEXTURE_2D, chainTexId);
+
+					if (rendertarget)
+					{
+						glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+						glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+						glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+						glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+					}
+					else
+					{
+						glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+						glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+						glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+						glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+					}
+				}
+			}
+		}
+		else
+		{
+			glGenTextures(1, &texId);
+			glBindTexture(GL_TEXTURE_2D, texId);
+
+			if (rendertarget)
+			{
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 			}
+			else
+			{
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+			}
 
-			glGenFramebuffers(1, &fboId);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_SRGB8_ALPHA8, texSize.w, texSize.h, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 		}
+
+		if (mipLevels > 1)
+		{
+			glGenerateMipmap(GL_TEXTURE_2D);
+		}
+
+		glGenFramebuffers(1, &fboId);
 	}
 
 	~TextureBuffer()
 	{
-		if (TextureSet) {
-			ovr_DestroySwapTextureSet(hmd, TextureSet);
-			TextureSet = nullptr;
+		if (TextureChain)
+		{
+			ovr_DestroyTextureSwapChain(Session, TextureChain);
+			TextureChain = nullptr;
 		}
-
-		if (fboId) {
+		if (texId)
+		{
+			glDeleteTextures(1, &texId);
+			texId = 0;
+		}
+		if (fboId)
+		{
 			glDeleteFramebuffers(1, &fboId);
 			fboId = 0;
 		}
@@ -124,30 +231,42 @@ struct TextureBuffer
 		return texSize;
 	}
 
-	void SetAndClearRenderSurface()
+	void SetAndClearRenderSurface(DepthBuffer* dbuffer)
 	{
-		auto tex = reinterpret_cast<ovrGLTexture*>(&TextureSet->Textures[TextureSet->CurrentIndex]);
+		GLuint curTexId;
+		if (TextureChain)
+		{
+			int curIndex;
+			ovr_GetTextureSwapChainCurrentIndex(Session, TextureChain, &curIndex);
+			ovr_GetTextureSwapChainBufferGL(Session, TextureChain, curIndex, &curTexId);
+		}
+		else
+		{
+			curTexId = texId;
+		}
 
-		/* push attributes */
-		glPushAttrib(GL_VIEWPORT_BIT | GL_SCISSOR_BIT);
-
-		glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &fboIdActiveDraw);
-
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fboId);
-		glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex->OGL.TexId, 0);
+		glBindFramebuffer(GL_FRAMEBUFFER, fboId);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, curTexId, 0);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, dbuffer->texId, 0);
 
 		glViewport(0, 0, texSize.w, texSize.h);
-		glScissor(0, 0, texSize.w, texSize.h);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glEnable(GL_FRAMEBUFFER_SRGB);
 	}
 
 	void UnsetRenderSurface()
 	{
-		/* pop attributes */
-		glPopAttrib();
+		glBindFramebuffer(GL_FRAMEBUFFER, fboId);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, 0, 0);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, 0, 0);
+	}
 
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fboId);
-		glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, 0, 0);
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fboIdActiveDraw);
+	void Commit()
+	{
+		if (TextureChain)
+		{
+			ovr_CommitTextureSwapChain(Session, TextureChain);
+		}
 	}
 };
 
@@ -183,6 +302,8 @@ OculusImpl::OculusImpl() :Backend()
 {
 	std::cout << "Oculus()" << std::endl;
 
+	std::cout << "VISGRAF ??????" << std::endl;
+
 	/* we need glew to access opengl commands */
 	glewInit();
 
@@ -197,7 +318,7 @@ OculusImpl::OculusImpl() :Backend()
 		throw "Oculus not connected";
 	}
 
-	ovrHmd hmd;
+	ovrSession hmd;
 	ovrGraphicsLuid luid;
 
 	/* initialize the device */
@@ -211,13 +332,7 @@ OculusImpl::OculusImpl() :Backend()
 	ovrHmdDesc desc = ovr_GetHmdDesc(hmd);
 	ovrSizei resolution = desc.Resolution;
 
-	/* setup tracking system */
-	ovr_ConfigureTracking(
-		hmd,
-		ovrTrackingCap_Orientation |
-		ovrTrackingCap_MagYawCorrection |
-		ovrTrackingCap_Position,
-		0);
+	ovr_SetTrackingOriginType(hmd, ovrTrackingOrigin_EyeLevel);
 
 	ovrSizei recommendedTex0Size = ovr_GetFovTextureSize(hmd, ovrEye_Left, desc.DefaultEyeFov[0], 1.0f);
 	ovrSizei recommendedTex1Size = ovr_GetFovTextureSize(hmd, ovrEye_Right, desc.DefaultEyeFov[1], 1.0f);
@@ -226,8 +341,8 @@ OculusImpl::OculusImpl() :Backend()
 	this->m_hmd = hmd;
 	this->m_eyeRenderDesc[0] = ovr_GetRenderDesc(hmd, ovrEye_Left, desc.DefaultEyeFov[0]);
 	this->m_eyeRenderDesc[1] = ovr_GetRenderDesc(hmd, ovrEye_Right, desc.DefaultEyeFov[1]);
-	this->m_hmdToEyeViewOffset[0] = this->m_eyeRenderDesc[0].HmdToEyeViewOffset;
-	this->m_hmdToEyeViewOffset[1] = this->m_eyeRenderDesc[1].HmdToEyeViewOffset;
+	this->m_hmdToEyeViewOffset[0] = this->m_eyeRenderDesc[0].HmdToEyeOffset;
+	this->m_hmdToEyeViewOffset[1] = this->m_eyeRenderDesc[1].HmdToEyeOffset;
 	this->m_frame = -1;
 	this->m_width[0] = recommendedTex0Size.w;
 	this->m_height[0] = recommendedTex0Size.h;
@@ -235,6 +350,8 @@ OculusImpl::OculusImpl() :Backend()
 	this->m_height[1] = recommendedTex1Size.h;
 	this->m_eyeRenderTexture[0] = NULL;
 	this->m_eyeRenderTexture[1] = NULL;
+	this->m_eyeDepthBuffer[0] = NULL;
+	this->m_eyeDepthBuffer[1] = NULL;
 	this->m_fbo[0] = 0;
 	this->m_fbo[1] = 0;
 	std::cout << "Oculus properly initialized (" << m_width[0] << "x" << m_height[0] << ", " << m_width[1] << "x" << m_height[1] << ")" << std::endl;
@@ -247,6 +364,9 @@ OculusImpl::~OculusImpl()
 	for (int eye = 0; eye < 2; eye++) {
 		if (this->m_eyeRenderTexture[eye])
 			delete this->m_eyeRenderTexture[eye];
+
+		if (this->m_eyeDepthBuffer[eye])
+			delete this->m_eyeDepthBuffer[eye];
 
 		if (this->m_fbo[eye])
 			glDeleteFramebuffers(1, &this->m_fbo[eye]);
@@ -286,10 +406,10 @@ bool OculusImpl::setup(const unsigned int color_texture_left, const unsigned int
 		ovrSizei idealTextureSize;
 		idealTextureSize.w = this->m_width[eye];
 		idealTextureSize.h = this->m_height[eye];
+		this->m_eyeRenderTexture[eye] = new TextureBuffer(this->m_hmd, true, true, idealTextureSize, 1, NULL, 1);
+		this->m_eyeDepthBuffer[eye] = new DepthBuffer(this->m_eyeRenderTexture[eye]->GetSize(), 0);
 
-		this->m_eyeRenderTexture[eye] = new TextureBuffer(this->m_hmd, idealTextureSize, 1);
-
-		if (!this->m_eyeRenderTexture[eye]->TextureSet) {
+		if (!this->m_eyeRenderTexture[eye]->TextureChain) {
 			return false;
 		}
 	}
@@ -303,7 +423,7 @@ bool OculusImpl::setup(const unsigned int color_texture_left, const unsigned int
 	layer.Header.Flags = ovrLayerFlag_TextureOriginAtBottomLeft;   // Because OpenGL.
 
 	for (int eye = 0; eye < 2; eye++) {
-		layer.ColorTexture[eye] = this->m_eyeRenderTexture[eye]->TextureSet;
+		layer.ColorTexture[eye] = this->m_eyeRenderTexture[eye]->TextureChain;
 		layer.Viewport[eye] = Recti(this->m_eyeRenderTexture[eye]->GetSize());
 		layer.Fov[eye] = this->m_eyeRenderDesc[eye].Fov;
 	}
@@ -477,11 +597,8 @@ bool OculusImpl::frameReady()
 	glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING, &readFboId);
 
 	for (int eye = 0; eye < 2; eye++) {
-		// Increment to use next texture, just before writing
-		this->m_eyeRenderTexture[eye]->TextureSet->CurrentIndex = (this->m_eyeRenderTexture[eye]->TextureSet->CurrentIndex + 1) % this->m_eyeRenderTexture[eye]->TextureSet->TextureCount;
-
 		// Switch to eye render target
-		this->m_eyeRenderTexture[eye]->SetAndClearRenderSurface();
+		this->m_eyeRenderTexture[eye]->SetAndClearRenderSurface(this->m_eyeDepthBuffer[eye]);
 
 		GLint w = this->m_eyeRenderTexture[eye]->texSize.w;
 		GLint h = this->m_eyeRenderTexture[eye]->texSize.h;
@@ -492,6 +609,8 @@ bool OculusImpl::frameReady()
 		                  0, 0, w, h,
 		                  GL_COLOR_BUFFER_BIT, GL_NEAREST);
 		this->m_eyeRenderTexture[eye]->UnsetRenderSurface();
+
+		this->m_eyeRenderTexture[eye]->Commit();
 	}
 
 	ovrLayerHeader *layers = &this->m_layer.Header;
@@ -505,7 +624,7 @@ bool OculusImpl::frameReady()
 
 bool OculusImpl::reCenter()
 {
-	ovr_RecenterPose(this->m_hmd);
+	ovr_RecenterTrackingOrigin(this->m_hmd);
 	return true;
 };
 
@@ -537,7 +656,7 @@ void OculusImpl::getProjectionMatrixRight(const float nearz, const float farz, c
 
 unsigned int OculusImpl::getProjectionMatrixFlags(const bool is_opengl, const bool is_right_hand)
 {
-	unsigned int flags = is_right_hand ? ovrProjection_RightHanded : ovrProjection_None;
+	unsigned int flags = is_right_hand ? ovrProjection_None : ovrProjection_LeftHanded;
 
 	if (is_opengl) {
 		flags |= ovrProjection_ClipRangeOpenGL;
