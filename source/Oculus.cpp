@@ -13,6 +13,8 @@
 
 using namespace OVR;
 
+#define DEBUG15
+
 
 #define MAX(a,b) a > b ? a : b;
 
@@ -93,6 +95,7 @@ struct DepthBuffer
 
 		GLenum internalFormat = GL_DEPTH_COMPONENT24;
 		GLenum type = GL_UNSIGNED_INT;
+
 		if (GL_ARB_depth_buffer_float)
 		{
 			internalFormat = GL_DEPTH_COMPONENT32F;
@@ -259,6 +262,7 @@ struct TextureBuffer
 		glBindFramebuffer(GL_FRAMEBUFFER, fboId);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, 0, 0);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, 0, 0);
+		glDisable(GL_FRAMEBUFFER_SRGB);
 	}
 
 	void Commit()
@@ -301,8 +305,6 @@ bool OculusImpl::initializeLibrary()
 OculusImpl::OculusImpl() :Backend()
 {
 	std::cout << "Oculus()" << std::endl;
-
-	std::cout << "VISGRAF ??????" << std::endl;
 
 	/* we need glew to access opengl commands */
 	glewInit();
@@ -594,7 +596,9 @@ bool OculusImpl::update(const bool is_right_hand, float *r_matrix_left, float *r
 bool OculusImpl::frameReady()
 {
 	GLint readFboId = 0;
+	GLint fboId = 0;
 	glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING, &readFboId);
+	glGetIntegerv(GL_FRAMEBUFFER_BINDING, &fboId);
 
 	for (int eye = 0; eye < 2; eye++) {
 		// Switch to eye render target
@@ -617,6 +621,7 @@ bool OculusImpl::frameReady()
 	ovrResult result = ovr_SubmitFrame(this->m_hmd, this->m_frame, nullptr, &layers, 1);
 
 	// restore active FBO
+	glBindFramebuffer(GL_FRAMEBUFFER, fboId);
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, readFboId);
 
 	return (ovrSuccess == result);
