@@ -5,8 +5,6 @@ Head Mounted Display
 Base class to be inherited by all HMDs
 """
 
-TODO = True
-
 class HMD:
     def __init__(self):
         self._device = None
@@ -57,7 +55,7 @@ class HMD:
         :return: return True if the device was properly initialized
         :rtype: bool
         """
-        return TODO
+        assert False, "Backend not fully implemented"
 
     def setup(self, color_texture_left, color_texture_right):
         """
@@ -70,7 +68,7 @@ class HMD:
         :return: return True if the device was properly initialized
         :rtype: bool
         """
-        return TODO
+        assert False, "Backend not fully implemented"
 
     def update(self):
         """
@@ -85,13 +83,13 @@ class HMD:
         """
         The frame is ready to be send to the device
         """
-        return TODO
+        assert False, "Backend not fully implemented"
 
     def quit(self):
         """
         Garbage collection
         """
-        return TODO
+        assert False, "Backend not fully implemented"
 
     def _cameraClippingChanged(self, near, far):
         """
