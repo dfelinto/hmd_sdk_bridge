@@ -88,6 +88,8 @@ if (${OPENVR_BACKEND})
             set (LIBNAME "libopenvr_api.dylib")
     else()
             set (OS "linux")
+            # TODO linux 64 only for now
+            set (PLATFORM "64")
             set (LIBNAME "libopenvr_api.so")
     endif()
 
