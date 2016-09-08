@@ -8,6 +8,10 @@
 #include "Oculus.h"
 #endif
 
+#if defined OPENVR
+#include "OpenVR.h"
+#endif
+
 /* C++ API */
 
 /* legacy overload constructor */
@@ -30,7 +34,11 @@ HMD::HMD(eHMDBackend backend):
 			m_hmd = new Oculus();
 			break;
 #endif
-		case BACKEND_VIVE:
+		case BACKEND_OPENVR:
+#if defined OPENVR
+			m_hmd = new OpenVR();
+			break;
+#endif
 		default:
 			m_hmd = new Stub();
 			break;
