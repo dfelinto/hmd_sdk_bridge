@@ -122,7 +122,7 @@ if (${OPENVR_BACKEND})
     set (BRIDGE_SOURCES
         ${BRIDGE_SOURCES}
                 ${PROJECT_SOURCE_DIR}/OpenVR.cpp
-                ${PROJECT_SOURCE_DIR}/OpenVR.h
+                ${PROJECT_SOURCE_DIR}/OpenVR_backend.h
     )
 endif (${OPENVR_BACKEND})
 

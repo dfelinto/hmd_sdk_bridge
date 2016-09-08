@@ -6,7 +6,7 @@
 #if defined(_WIN32) || defined(_WIN64)
 
 #if !defined(DllExport)
-#define DllExport   __declspec( dllexport )  
+#define DllExport   __declspec( dllexport )
 #endif
 
 #else

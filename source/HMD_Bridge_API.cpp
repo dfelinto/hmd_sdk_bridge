@@ -9,7 +9,7 @@
 #endif
 
 #if defined OPENVR
-#include "OpenVR.h"
+#include "OpenVR_backend.h"
 #endif
 
 /* C++ API */
