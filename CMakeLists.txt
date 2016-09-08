@@ -31,6 +31,7 @@ set (BRIDGE_SOURCES
     ${PROJECT_SOURCE_DIR}/Debug.h
     ${PROJECT_SOURCE_DIR}/HMD_Bridge_API.cpp
     ${PROJECT_SOURCE_DIR}/HMD_Bridge_API.h
+		${PROJECT_SOURCE_DIR}/Math.h
     ${PROJECT_SOURCE_DIR}/Stub.h
     )
 
