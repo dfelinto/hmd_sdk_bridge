@@ -17,7 +17,7 @@ endif (BUILD_SHARED_LIBS)
 
 # The version number.
 set (HMD_Bridge_VERSION_MAJOR 0)
-set (HMD_Bridge_VERSION_MINOR 1)
+set (HMD_Bridge_VERSION_MINOR 2)
 
 # source files
 set (PROJECT_SOURCE_DIR source)
@@ -68,11 +68,41 @@ if (WIN32)
 endif ()
 set(OCULUS_SDK_LIBRARY ${OCULUS_SDK_LIBRARY_PATH}/LibOVR.lib)
 
+
+set (OPENVR_SDK_DIR "" CACHE PATH "OpenVR SDK Folder")
+include_directories (${OPENVR_SDK_DIR}/headers)
+
+if (${OPENVR_BACKEND})
+    if (CMAKE_CL_64)
+            set (PLATFORM "64")
+    else ()
+            set (PLATFORM "32")
+    endif()
+
+    if (WIN32)
+            set (OS "win")
+            set (LIBNAME "openvr_api.lib")
+    elseif (APPLE)
+            set (OS "osx")
+            set (PLATFORM "32")
+            set (LIBNAME "libopenvr_api.dylib")
+    else()
+            set (OS "linux")
+            set (LIBNAME "libopenvr_api.so")
+    endif()
+
+    # OpenVR
+    set (OPENVR_SDK_LIBRARY_PATH ${OPENVR_SDK_DIR}/lib/${OS}${PLATFORM})
+    set (OPENVR_SDK_LIBRARY ${OPENVR_SDK_LIBRARY_PATH}/${LIBNAME})
+endif ()
+
 if (WIN32)
     option (OCULUS_BACKEND "Oculus Backend" ON)
 else ()
     option (OCULUS_BACKEND "Oculus Backend" OFF)
 endif(WIN32)
+
+option (OPENVR_BACKEND "OpenVR (VIVE) Backend" ON)
 
 # Set the OCULUS_BACKEND
 if (${OCULUS_BACKEND})
@@ -83,6 +113,16 @@ if (${OCULUS_BACKEND})
         ${PROJECT_SOURCE_DIR}/Oculus.h
     )
 endif (${OCULUS_BACKEND})
+
+# Set the OPENVR_BACKEND
+if (${OPENVR_BACKEND})
+        add_definitions (-DOPENVR)
+    set (BRIDGE_SOURCES
+        ${BRIDGE_SOURCES}
+                ${PROJECT_SOURCE_DIR}/OpenVR.cpp
+                ${PROJECT_SOURCE_DIR}/OpenVR.h
+    )
+endif (${OPENVR_BACKEND})
 
 add_library (${CMAKE_PROJECT_NAME} ${LIB_TYPE} ${BRIDGE_SOURCES} ${GLEW_SOURCES})
 set_property(TARGET ${CMAKE_PROJECT_NAME} PROPERTY CXX_STANDARD 11)
@@ -95,6 +135,9 @@ if (${OCULUS_BACKEND})
     target_link_libraries (${CMAKE_PROJECT_NAME} ${OCULUS_SDK_LIBRARY})
 endif (${OCULUS_BACKEND})
 
+if (${OPENVR_BACKEND})
+    target_link_libraries (${CMAKE_PROJECT_NAME} ${OPENVR_SDK_LIBRARY})
+endif (${OPENVR_BACKEND})
 
 # Installing
 if (CMAKE_CL_64)
