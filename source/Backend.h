@@ -48,6 +48,11 @@ public:
 	virtual float getScale() { return this->m_scale; }
 	virtual void setScale(const float scale) { this->m_scale = scale; }
 
+	virtual bool getStateBool(){ return false; }
+	virtual bool getStatus(){ return true; }
+	virtual void setStatus(bool status){}
+	virtual void setStateBool(bool status){}
+
 protected:
 	unsigned int m_color_texture[2];
 	unsigned int m_width[2];
@@ -59,7 +64,7 @@ class DllExport Backend
 {
 public:
 	Backend() {
-		//this->initializeImplementation();
+		this->initializeImplementation();
 	}
 
 	~Backend() {
@@ -152,11 +157,13 @@ public:
 		this->m_me->setScale(scale);
 	}
 
+	virtual void initializeImplementation()
+	{
+		/* must be implemented in the client */
+	};
+
 protected:
 	BackendImpl *m_me;
-
-	/* must overwrite */
-	virtual void initializeImplementation() = 0;
 };
 
 #endif /* __BACKEND_H__ */
