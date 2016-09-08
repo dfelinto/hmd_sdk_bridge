@@ -26,7 +26,7 @@ typedef enum eLibStatus
 	LIB_INITIALIZED,
 };
 
-class DllExport OculusImpl : protected Backend
+class DllExport OculusImpl : public BackendImpl
 {
 public:
 	friend class Oculus;
@@ -300,7 +300,7 @@ bool OculusImpl::initializeLibrary()
 	}
 }
 
-OculusImpl::OculusImpl() :Backend()
+OculusImpl::OculusImpl() :BackendImpl()
 {
 	std::cout << "Oculus()" << std::endl;
 
@@ -667,99 +667,6 @@ unsigned int OculusImpl::getProjectionMatrixFlags(const bool is_opengl, const bo
 	return flags;
 }
 
-
-Oculus::Oculus() 
-	: Backend()
-	, m_me(new OculusImpl)
-{	
-}
-
-Oculus::~Oculus()
-{
-	if (this->m_me) {
-		delete this->m_me;
-	}
-}
-
-bool Oculus::setup(const unsigned int color_texture_left, const unsigned int color_texture_right)
-{
-	return this->m_me->setup(color_texture_left, color_texture_right);
-}
-
-bool Oculus::update(float *r_orientation_left, float *r_position_left, float *r_orientation_right, float *r_position_right)
-{
-	return this->m_me->update(r_orientation_left, r_position_left, r_orientation_right, r_position_right);
-}
-
-bool Oculus::update(
-	float *r_yaw_left, float *r_pitch_left, float *r_roll_left, float *r_position_left,
-	float *r_yaw_right, float *r_pitch_right, float *r_roll_right, float *r_position_right)
-{
-	return this->m_me->update(
-		r_yaw_left, r_pitch_left, r_roll_left, r_position_left,
-		r_yaw_right, r_pitch_right, r_roll_right, r_position_right);
-}
-
-bool Oculus::update(
-	float *r_yaw_left, float *r_pitch_left, float *r_roll_left, float *r_orientation_left, float *r_position_left,
-	float *r_yaw_right, float *r_pitch_right, float *r_roll_right, float *r_orientation_right, float *r_position_right)
-{
-	return this->m_me->update(
-		r_yaw_left, r_pitch_left, r_roll_left, r_orientation_left, r_position_left,
-		r_yaw_right, r_pitch_right, r_roll_right, r_orientation_right, r_position_right);
-}
-
-bool Oculus::update(const bool is_right_hand, float *r_matrix_left, float *r_matrix_right)
-{
-	return this->m_me->update(is_right_hand, r_matrix_left, r_matrix_right);
-}
-
-bool Oculus::frameReady()
-{
-	return this->m_me->frameReady();
-}
-
-bool Oculus::reCenter()
-{
-	return this->m_me->reCenter();
-}
-
-void Oculus::getProjectionMatrixLeft(const float nearz, const float farz, const bool is_opengl, const bool is_right_hand, float *r_matrix)
-{
-	return this->m_me->getProjectionMatrixLeft(nearz, farz, is_opengl, is_right_hand, r_matrix);
-}
-
-void Oculus::getProjectionMatrixRight(const float nearz, const float farz, const bool is_opengl, const bool is_right_hand, float *r_matrix)
-{
-	return this->m_me->getProjectionMatrixRight(nearz, farz, is_opengl, is_right_hand, r_matrix);
-}
-
-int Oculus::getWidthLeft()
-{
-	return this->m_me->getWidthLeft();
-}
-
-int Oculus::getWidthRight()
-{
-	return this->m_me->getWidthRight();
-}
-
-int Oculus::getHeightLeft()
-{
-	return this->m_me->getHeightLeft();
-}
-
-int Oculus::getHeightRight()
-{
-	return this->m_me->getHeightRight();
-}
-
-float Oculus::getScale()
-{
-	return this->m_me->getScale();
-}
-
-void Oculus::setScale(const float scale)
-{
-	this->m_me->setScale(scale);
+void Oculus::initializeImplementation() {
+	m_me = new OculusImpl();
 }

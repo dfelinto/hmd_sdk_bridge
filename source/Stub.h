@@ -13,7 +13,7 @@
 #define DllExport
 #endif
 
-class DllExport Stub : public Backend
+class DllExport StubImpl : public BackendImpl
 {
 public:
 	bool setup(const unsigned int, const unsigned int) { return false;  }
@@ -52,6 +52,14 @@ public:
 	void getProjectionMatrixLeft(const float, const float, const bool, const bool, float *) {}
 
 	void getProjectionMatrixRight(const float, const float, const bool, const bool, float *) {}
+};
+
+class DllExport Stub : public Backend {
+private:
+	StubImpl *m_me;
+	virtual void initializeImplementation() {
+		this->m_me = new StubImpl();
+	}
 };
 
 #endif /* __STUB_H__ */

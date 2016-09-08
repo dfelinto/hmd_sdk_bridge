@@ -2,11 +2,11 @@
 
 #include "Backend.h"
 
+#include "Stub.h"
+
 #if defined OCULUS
 #include "Oculus.h"
 #endif
-
-#include "Stub.h"
 
 /* C++ API */
 
