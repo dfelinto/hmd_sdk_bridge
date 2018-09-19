@@ -31,7 +31,6 @@ set (BRIDGE_SOURCES
     ${PROJECT_SOURCE_DIR}/Debug.h
     ${PROJECT_SOURCE_DIR}/HMD_Bridge_API.cpp
     ${PROJECT_SOURCE_DIR}/HMD_Bridge_API.h
-		${PROJECT_SOURCE_DIR}/Math.h
     ${PROJECT_SOURCE_DIR}/Stub.h
     )
 
@@ -39,6 +38,10 @@ set (LIB lib)
 set (GLEW_SOURCES ${LIB}/glew/src/glew.c)
 set (GLEW_INCLUDES ${LIB}/glew/include)
 include_directories (${GLEW_INCLUDES})
+
+set (MATH_SOURCES ${LIB}/math/src/Matrices.cpp)
+set (MATH_INCLUDES ${LIB}/math/include)
+include_directories (${MATH_INCLUDES})
 
 set (OCULUS_SDK_DIR "" CACHE PATH "Oculus SDK 0.7 LibOVR Folder")
 include_directories (${OCULUS_SDK_DIR}/Include)
@@ -126,7 +129,7 @@ if (${OPENVR_BACKEND})
     )
 endif (${OPENVR_BACKEND})
 
-add_library (${CMAKE_PROJECT_NAME} ${LIB_TYPE} ${BRIDGE_SOURCES} ${GLEW_SOURCES})
+add_library (${CMAKE_PROJECT_NAME} ${LIB_TYPE} ${BRIDGE_SOURCES} ${GLEW_SOURCES} ${MATH_SOURCES})
 set_property(TARGET ${CMAKE_PROJECT_NAME} PROPERTY CXX_STANDARD 11)
 
 if (WIN32)
