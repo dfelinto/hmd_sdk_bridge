@@ -1,8 +1,8 @@
-#ifndef MATH_H
-#define MATH_H
+#ifndef __MATH_H__
+#define __MATH_H__
 
 #include "Matrices.h"
 #include "MatrixQuaternionMath.h"
 #include "Vectors.h"
 
-#endif /* MATH_H */
+#endif /* __MATH_H__ */
