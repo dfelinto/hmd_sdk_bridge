@@ -20,10 +20,9 @@ from ctypes import (
 class Backend:
     OCULUS = 0
     OCULUS_LEGACY = 1
-    VIVE = 2
-    OSVR = 3
-    OPENVR = 4
-    OPENHMD = 5
+    OPENVR = 2
+    OPENHMD = 3
+    OSVR = 4
 
 
 class HMD(baseHMD):

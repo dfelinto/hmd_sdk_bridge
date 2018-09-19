@@ -10,5 +10,5 @@ from .backend import Backend
 
 
 class HMD(baseHMD):
-    _backend = Backend.VIVE
+    _backend = Backend.OPENVR
 
