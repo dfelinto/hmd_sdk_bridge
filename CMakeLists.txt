@@ -20,7 +20,7 @@ set (HMD_Bridge_VERSION_MAJOR 0)
 set (HMD_Bridge_VERSION_MINOR 2)
 
 # source files
-set (PROJECT_SOURCE_DIR source)
+set (PROJECT_SOURCE_DIR src)
 
 # add the binary tree to the search path for include files
 # so that we will find HMD_Bridge_Config.h
@@ -35,10 +35,9 @@ set (BRIDGE_SOURCES
     ${PROJECT_SOURCE_DIR}/Stub.h
     )
 
-set (EXTERN extern)
-set (GLEW_SOURCES ${EXTERN}/glew/src/glew.c)
-set (GLEW_INCLUDES ${EXTERN}/glew/include)
-
+set (LIB lib)
+set (GLEW_SOURCES ${LIB}/glew/src/glew.c)
+set (GLEW_INCLUDES ${LIB}/glew/include)
 include_directories (${GLEW_INCLUDES})
 
 set (OCULUS_SDK_DIR "" CACHE PATH "Oculus SDK 0.7 LibOVR Folder")
@@ -157,5 +156,5 @@ mark_as_advanced(CMAKE_INSTALL_PREFIX)
 message("-- Library destination: " ${CMAKE_INSTALL_PREFIX})
 
 install (TARGETS ${CMAKE_PROJECT_NAME} DESTINATION lib/${ARCH})
-install (FILES source/HMD_Bridge_API.h DESTINATION include)
+install (FILES src/HMD_Bridge_API.h DESTINATION include)
 install (DIRECTORY python/ DESTINATION .)
