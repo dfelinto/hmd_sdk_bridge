@@ -34,13 +34,13 @@ set (BRIDGE_SOURCES
     ${PROJECT_SOURCE_DIR}/Stub.h
     )
 
-set (LIB lib)
-set (GLEW_SOURCES ${LIB}/glew/src/glew.c)
-set (GLEW_INCLUDES ${LIB}/glew/include)
+set (LIBS libs)
+set (GLEW_SOURCES ${LIBS}/glew/src/glew.c)
+set (GLEW_INCLUDES ${LIBS}/glew/include)
 include_directories (${GLEW_INCLUDES})
 
-set (MATH_SOURCES ${LIB}/math/src/Matrices.cpp)
-set (MATH_INCLUDES ${LIB}/math/include)
+set (MATH_SOURCES ${LIBS}/math/src/Matrices.cpp)
+set (MATH_INCLUDES ${LIBS}/math/include)
 include_directories (${MATH_INCLUDES})
 
 set (OCULUS_SDK_DIR "" CACHE PATH "Oculus SDK 0.7 LibOVR Folder")
