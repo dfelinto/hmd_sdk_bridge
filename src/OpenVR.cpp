@@ -15,7 +15,7 @@ typedef enum eLibStatus
 	LIB_UNLOADED = 0,
 	LIB_FAILED,
 	LIB_INITIALIZED,
-};
+} eLibStatus;
 
 class DllExport OpenVRImpl : public BackendImpl
 {
@@ -156,6 +156,7 @@ bool OpenVRImpl::initializeOverlay()
 		{
 			std::string s = std::to_string((int)peError);
 			std::cout << "Error: VROverlayError: #" << s << std::endl ;
+			return false;
 		}
 	}
 }
@@ -204,7 +205,7 @@ void OpenVRImpl::UpdateHMDMatrixPose()
 				case vr::TrackedDeviceClass_Controller:        m_rDevClassChar[nDevice] = 'C'; break;
 				case vr::TrackedDeviceClass_HMD:               m_rDevClassChar[nDevice] = 'H'; break;
 				case vr::TrackedDeviceClass_Invalid:           m_rDevClassChar[nDevice] = 'I'; break;
-				case vr::TrackedDeviceClass_Other:             m_rDevClassChar[nDevice] = 'O'; break;
+				case vr::TrackedDeviceClass_GenericTracker:    m_rDevClassChar[nDevice] = 'G'; break;
 				case vr::TrackedDeviceClass_TrackingReference: m_rDevClassChar[nDevice] = 'T'; break;
 				default:                                       m_rDevClassChar[nDevice] = '?'; break;
 				}
@@ -439,7 +440,7 @@ bool OpenVRImpl::frameReady()
 	{
 		vr::EVREye eEye = (vr::EVREye)eye;
 
-		vr::Texture_t texture = { (void*)this->m_color_texture[eye], vr::API_OpenGL, vr::ColorSpace_Auto };
+		vr::Texture_t texture = { (void*)this->m_color_texture[eye], vr::TextureType_OpenGL, vr::ColorSpace_Auto };
 
 		vr::VRTextureBounds_t bounds;
 		bounds.uMin = (eye == 0) ? 0.0f : 0.0f;
@@ -511,7 +512,7 @@ Matrix4 OpenVRImpl::GetCurrentViewProjectionMatrix(vr::Hmd_Eye nEye)
 
 Matrix4 OpenVRImpl::GetHMDMatrixProjectionEye(vr::Hmd_Eye nEye)
 {
-	return this->GetHMDMatrixProjectionEye(nEye, m_fNearClip, m_fFarClip, vr::API_OpenGL);
+	return this->GetHMDMatrixProjectionEye(nEye, m_fNearClip, m_fFarClip, true);
 }
 
 Matrix4 OpenVRImpl::GetHMDMatrixProjectionEye(vr::Hmd_Eye nEye, float fNearClip, float fFarClip, bool isOpenGL)
@@ -519,7 +520,7 @@ Matrix4 OpenVRImpl::GetHMDMatrixProjectionEye(vr::Hmd_Eye nEye, float fNearClip,
 	if (!m_pHMDy)
 		return Matrix4();
 
-	vr::HmdMatrix44_t mat = m_pHMDy->GetProjectionMatrix(nEye, fNearClip, fFarClip, (vr::EGraphicsAPIConvention)isOpenGL);
+	vr::HmdMatrix44_t mat = m_pHMDy->GetProjectionMatrix(nEye, fNearClip, fFarClip);
 
 	return Matrix4(
 		mat.m[0][0], mat.m[1][0], mat.m[2][0], mat.m[3][0],

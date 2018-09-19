@@ -17,7 +17,7 @@ endif (BUILD_SHARED_LIBS)
 
 # The version number.
 set (HMD_Bridge_VERSION_MAJOR 0)
-set (HMD_Bridge_VERSION_MINOR 2)
+set (HMD_Bridge_VERSION_MINOR 3)
 
 # source files
 set (PROJECT_SOURCE_DIR src)
